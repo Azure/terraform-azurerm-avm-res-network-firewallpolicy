@@ -254,7 +254,7 @@ variable "nat_rule_collection_action" {
 
 // NAT Rule Collection Rules
 variable "nat_rule" {
-  type = object({
+  type = map(object({
     description           = optional(string)
     protocols             = list(string)
     source_addresses      = optional(list(string))
@@ -264,7 +264,7 @@ variable "nat_rule" {
     translated_address    = optional(string)
     translated_fqdn       = optional(string)
     translated_port       = number
-  })
+  }))
   description = <<DESCRIPTION
   The map of NAT Rules to use for the Azure Firewall Policy
   Each object in the list must contain the following attributes:
