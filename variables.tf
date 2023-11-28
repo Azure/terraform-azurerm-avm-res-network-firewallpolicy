@@ -101,9 +101,8 @@ variable "app_rule_collection_action" {
 
 variable "app_rule" {
   type = object({
-    name        = string
     description = optional(string)
-    protocols = optional(list(object({
+    protocols = optional(map(object({
       type = string
       port = number
     })))
@@ -292,11 +291,6 @@ variable "nat_rule" {
     }
 
   DESCRIPTION
-
-    validation {
-    condition = contains(["TCP", "UDP"], var.nat_rule.protocols)
-    error_message = "The acceptable values for protocols.type are Any, TCP, UDP, or ICMP"
-  }
 }
 
 variable "diagnostic_settings" {

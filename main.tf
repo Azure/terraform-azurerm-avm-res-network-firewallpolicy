@@ -10,6 +10,7 @@ resource "azurerm_firewall_policy" "firewall_policy" {
     proxy_enabled = var.proxy_enabled
     servers       = var.dns_servers
   }
+  base_policy_id           = var.base_policy_id
   threat_intelligence_mode = var.threat_intel_mode
   tags                     = var.tags
 }
@@ -17,7 +18,7 @@ resource "azurerm_firewall_policy" "firewall_policy" {
 resource "azurerm_firewall_policy_rule_collection_group" "firewall_policy_collection_group" {
   for_each           = var.rule_collection_group
   name               = coalesce(each.value.name, "rule-collection-group-${var.fw_policy_name}")
-  firewall_policy_id = azurerm_firewall_policy.firewall_policy.id
+  firewall_policy_id = each.value.firewall_policy_id
   priority           = each.value.priority
 
   application_rule_collection {

@@ -8,6 +8,10 @@ terraform {
   }
 }
 
+provider "azurerm" {
+  features {}
+}
+
 # This picks a random region from the list of regions.
 resource "random_integer" "region_index" {
   min = 0
@@ -36,58 +40,54 @@ resource "azurerm_resource_group" "this" {
   location = local.azure_regions[random_integer.region_index.result]
 }
 
+# Creating a default Azure Firewall Policy that will be the Parent Policy
+resource "azurerm_firewall_policy" "parent_firewall_policy" {
+  name                = "parent-firewall-policy"
+  resource_group_name = azurerm_resource_group.this.name
+  location            = azurerm_resource_group.this.location
+}
+
 # This is the module call
 module "firewall_policy" {
-  source = "Azure/avm-res-network-firewallpolicy/azurerm"
+  source = "../.."
   # source             = "Azure/avm-<res/ptn>-<name>/azurerm"
-  enable_telemetry             = var.enable_telemetry
-  fw_policy_name               = "firewall-policy"
-  resource_group_name          = azurerm_resource_group.this.name
-  location                     = azurerm_resource_group.this.location
-  sku                          = "Standard"
-  proxy_enabled                = false
-  dns_servers                  = [""]
-  threat_intel_fqdn_allowlist  = ["*microsoft.com"]
-  threat_intel_ip_allowlist    = [""]
-  threat_intel_mode            = "Alert"
-  fw_policy_rcg_name           = "fw-policy-rcg"
-  priority                     = 300
+  enable_telemetry    = var.enable_telemetry
+  fw_policy_name      = "firewall-policy"
+  resource_group_name = azurerm_resource_group.this.name
+  location            = azurerm_resource_group.this.location
+  sku                 = "Standard"
+  proxy_enabled       = false
+  base_policy_id      = azurerm_firewall_policy.parent_firewall_policy.id
+
+  threat_intel_mode = "Alert"
+  rule_collection_group = {
+    name               = "rule-collection-group"
+    priority           = 300
+    firewall_policy_id = module.firewall_policy.firewall_policy_id
+  }
   app_rule_collection_name     = "app-rule-collection"
   app_rule_collection_priority = 400
   app_rule_collection_action   = "Allow"
   app_rule = {
-    description = "HTTPS rule"
+    source_address = [ "*" ]
+    destination_fqdns = [ "*.microsoft.com" ]
     protocols = {
       type = "Https"
-      port = "443"
+      port = 443
     }
-    source_addresses  = ["*"]
-    destination_fqdns = ["*.microsoft.com"]
-    terminate_tls     = false
   }
   net_rule_collection_name     = "net-rule-collection"
   net_rule_collection_priority = 500
   net_rule_collection_action   = "Allow"
   net_rule = {
-    description           = "Allow RDP"
-    protocols             = ["TCP"]
-    source_addresses      = ["*"]
-    destination_addresses = ["132.87.101.123"]
-    destination_ports     = ["3389"]
+    protocols         = "TCP"
+    destination_ports = ["443"]
   }
   nat_rule_collection_name     = "nat-rule-collection"
   nat_rule_collection_priority = 600
   nat_rule_collection_action   = "Dnat"
   nat_rule = {
-    description           = "DNAT rule"
-    protocols             = ["TCP"]
-    source_addresses      = ["*"]
-    translated_address    = ["10.10.1.4"]
-    translated_port       = "3389"
-    destination_addresses = ["124.12.44.100"]
-    destination_ports     = ["3389"]
-  }
-  tags = {
-    environment = "dev"
+    protocols       = ["TCP", "UDP"]
+    translated_port = "8080"
   }
 }
