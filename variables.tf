@@ -45,6 +45,7 @@ variable "dns_servers" {
   The list of DNS servers to use for the Azure Firewall Policy.
   This will not be needed if the DNS proxy enabled is set to False
   DESCRIPTION
+  default     = []
 }
 
 variable "threat_intel_mode" {
@@ -56,26 +57,13 @@ variable "threat_intel_mode" {
   }
 }
 
-variable "threat_intel_fqdn_allowlist" {
-  type        = list(string)
-  description = "The list of FQDNs to allow for the Azure Firewall Policy."
-}
-
-variable "threat_intel_ip_allowlist" {
-  type        = list(string)
-  description = "The list of IPs to allow for the Azure Firewall Policy."
-}
-
 // Azure Firewall Policy Resource Collection Group
 
-variable "fw_policy_rcg_name" {
-  type        = string
-  description = "The name of the Azure Firewall Policy Resource Collection Group."
-}
-
-variable "priority" {
-  type        = number
-  description = "The priority of the Azure Firewall Policy Resource Collection Group."
+variable "rule_collection_group" {
+  type = map(object({
+    name     = string
+    priority = number
+  }))
 }
 
 // Application Rule Collection
@@ -87,17 +75,26 @@ variable "app_rule_collection_name" {
 variable "app_rule_collection_priority" {
   type        = number
   description = "The priority of the Azure Firewall Policy Application Rule Collection."
+  validation {
+    condition     = var.app_rule_collection_priority == null ? true : var.app_rule_collection_priority >= 100 && var.app_rule_collection_priority <= 65000
+    error_message = "The priority must be between 100 and 65000"
+  }
 }
 
 variable "app_rule_collection_action" {
   type        = string
   description = "value of the action for the Azure Firewall Policy Application Rule Collection."
+  validation {
+    condition     = contains(["Allow", "Deny"], var.app_rule_collection_action)
+    error_message = "The acceptable values for app_rule_collection_action are Allow or Deny"
+  }
 }
 
 // Application Rule Collection Rules
 
 variable "app_rule" {
   type = map(object({
+    name        = string
     description = optional(string)
     protocols = optional(list(object({
       type = string
@@ -145,7 +142,7 @@ variable "app_rule" {
   ```
   DESCRIPTION
   validation {
-    condition     = contains(["true", "false"], var.terminate_tls)
+    condition     = contains(["true", "false"], var.app_rule.terminate_tls)
     error_message = "The acceptable values for terminate_tls are true or false"
   }
 }
@@ -173,7 +170,7 @@ variable "net_rule" {
   type = map(object({
     description           = optional(string)
     protocols             = string
-    destination_ports     = (list(number))
+    destination_ports     = list(number)
     source_address        = optional(list(string))
     source_ip_groups      = optional(list(string))
     destination_address   = optional(list(string))
@@ -234,7 +231,7 @@ variable "nat_rule" {
     destination_ports     = optional(list(number))
     translated_address    = optional(string)
     translated_fqdn       = optional(string)
-    translated_port       = (number)
+    translated_port       = number
   }))
   description = <<DESCRIPTION
   The map of NAT Rules to use for the Azure Firewall Policy
