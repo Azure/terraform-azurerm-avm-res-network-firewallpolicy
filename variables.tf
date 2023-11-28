@@ -157,11 +157,19 @@ variable "net_rule_collection_name" {
 variable "net_rule_collection_priority" {
   type        = number
   description = "The priority of the Azure Firewall Policy Network Rule Collection."
+    validation {
+    condition     = var.net_rule_collection_priority == null ? true : var.net_rule_collection_priority >= 100 && var.net_rule_collection_priority <= 65000
+    error_message = "The priority must be between 100 and 65000"
+  }
 }
 
 variable "net_rule_collection_action" {
   type        = string
   description = "value of the action for the Azure Firewall Policy Network Rule Collection."
+  validation {
+    condition     = contains(["Allow", "Deny"], var.net_rule_collection_action)
+    error_message = "The acceptable values for net_rule_collection_action are Allow or Deny"
+  }
 }
 
 // Network Rule Collection Rules
@@ -214,11 +222,20 @@ variable "nat_rule_collection_name" {
 variable "nat_rule_collection_priority" {
   type        = number
   description = "The priority of the Azure Firewall Policy NAT Rule Collection."
+  validation {
+    condition     = var.nat_rule_collection_priority == null ? true : var.nat_rule_collection_priority >= 100 && var.nat_rule_collection_priority <= 65000
+    error_message = "The priority must be between 100 and 65000"
+  }
 }
 
 variable "nat_rule_collection_action" {
   type        = string
   description = "value of the action for the Azure Firewall Policy NAT Rule Collection."
+  validation {
+    condition     = contains(["Dnat"], var.nat_rule_collection_action)
+    error_message = "The acceptable values for nat_rule_collection_action is Dnat"
+  
+  }
 }
 
 variable "nat_rule" {
