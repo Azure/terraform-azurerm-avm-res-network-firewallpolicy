@@ -66,17 +66,32 @@ variable "threat_intel_mode" {
 // Azure Firewall Policy Resource Collection Group
 
 variable "rule_collection_group" {
-  type = object({
-    name               = string
-    priority           = number
-    firewall_policy_id = string
-  })
+  type = map(object({
+    name     = string
+    priority = number
+  }))
+  default     = {}
+  description = <<DESCRIPTION
+  The map of Rule Collection Groups to use for the Azure Firewall Policy. Name and Priority are required atrributes for Rule Collection Group.
+  You can create multiple Rule Collection Groups for different rule types i.e. Network, Application, NAT or you can use one Rule Collection Group for all rule types.
+  
+  Example Input:
+  ```terraform
+  rule_collection_group = {
+    group1 = {
+      name     = "DefaultRuleCollectionGroup"
+      priority = 300
+    }
+  }
+  ```
+  DESCRIPTION
 }
 
 // Application Rule Collection
 variable "app_rule_collection_name" {
   type        = string
   description = "The name of the Azure Firewall Policy Application Rule Collection."
+  default     = null
 }
 
 variable "app_rule_collection_priority" {
@@ -86,6 +101,7 @@ variable "app_rule_collection_priority" {
     condition     = var.app_rule_collection_priority == null ? true : var.app_rule_collection_priority >= 100 && var.app_rule_collection_priority <= 65000
     error_message = "The priority must be between 100 and 65000"
   }
+  default = null
 }
 
 variable "app_rule_collection_action" {
@@ -95,18 +111,19 @@ variable "app_rule_collection_action" {
     condition     = contains(["Allow", "Deny"], var.app_rule_collection_action)
     error_message = "The acceptable values for app_rule_collection_action are Allow or Deny"
   }
+  default = null
 }
 
 // Application Rule Collection Rules
 
 variable "app_rule" {
-  type = object({
+  type = map(object({
     description = optional(string)
-    protocols = optional(map(object({
-      type = string
-      port = number
+    protocols = optional(list(object({
+      type = optional(string)
+      port = optional(number)
     })))
-    source_address         = optional(list(string))
+    source_addresses       = optional(list(string))
     source_ip_groups       = optional(list(string))
     destination_address    = optional(list(string))
     destination_urls       = optional(list(string))
@@ -114,7 +131,9 @@ variable "app_rule" {
     destination_fqdns_tags = optional(list(string))
     terminate_tls          = optional(bool)
     web_categories         = optional(list(string))
-  })
+  }))
+  default  = {}
+  nullable = true
 
   description = <<DESCRIPTION
   The map of Application Rules to use for the Azure Firewall Policy
@@ -147,16 +166,15 @@ variable "app_rule" {
   }
   ```
   DESCRIPTION
-  validation {
-    condition     = contains(["true", "false"], var.app_rule.terminate_tls)
-    error_message = "The acceptable values for terminate_tls are true or false"
-  }
+
 }
+
 // Network Rule Collection
 
 variable "net_rule_collection_name" {
   type        = string
   description = "The name of the Azure Firewall Policy Network Rule Collection."
+  default     = null
 }
 
 variable "net_rule_collection_priority" {
@@ -166,6 +184,7 @@ variable "net_rule_collection_priority" {
     condition     = var.net_rule_collection_priority == null ? true : var.net_rule_collection_priority >= 100 && var.net_rule_collection_priority <= 65000
     error_message = "The priority must be between 100 and 65000"
   }
+  default = null
 }
 
 variable "net_rule_collection_action" {
@@ -175,22 +194,24 @@ variable "net_rule_collection_action" {
     condition     = contains(["Allow", "Deny"], var.net_rule_collection_action)
     error_message = "The acceptable values for net_rule_collection_action are Allow or Deny"
   }
+  default = null
 }
 
 // Network Rule Collection Rules
 
 variable "net_rule" {
-  type = object({
+  type = map(object({
     description           = optional(string)
-    protocols             = string
-    destination_ports     = list(number)
-    source_address        = optional(list(string))
-    source_ip_groups      = optional(list(string))
-    destination_address   = optional(list(string))
-    destination_ip_groups = optional(list(string))
-    destination_fqdns     = optional(list(string))
-  })
-  
+    protocols             = list(string)
+    destination_ports     = number
+    source_addresses      = optional(string)
+    source_ip_groups      = optional(string)
+    destination_addresses = optional(string)
+    destination_ip_groups = optional(string)
+    destination_fqdns     = optional(string)
+  }))
+  default     = {}
+  nullable    = true
   description = <<DESCRIPTION
 
   The map of Network Rules to use for the Azure Firewall Policy
@@ -199,7 +220,7 @@ variable "net_rule" {
   - `description`: (Optional) The description of the net rule
   - `protocols`: (Required) The protocols to use for the net rule
   - `destination_ports`: (Required) The destination ports to use for the net rule
-  - `source_address`: (Optional) The source address to use for the net rule
+  - `source_addresses`: (Optional) The source address to use for the net rule
   - `source_ip_groups`: (Optional) The source ip groups to use for the net rule. Only use if your not using source_address.
   - `destination_address`: (Optional) The destination address to use for the net rule
   - `destination_ip_groups`: (Optional) The destination ip groups to use for the net rule. Only use if your not using destination_address.
@@ -213,17 +234,18 @@ variable "net_rule" {
     description = "Allow RDP to Virtual Machines"
     protocols = "TCP"
     destination_ports = [3389]
-    source_address = ["*"]
+    source_addresses = ["*"]
     destination_address = ["*"]
   }
   ```
 
   DESCRIPTION
-
+  /*
  validation {
    condition = contains(["Any", "TCP", "UDP", "ICMP"], var.net_rule.protocols)
    error_message = "The acceptable values for protocols.type are Any, TCP, UDP, or ICMP"
   }
+  */
 }
 
 
@@ -255,16 +277,19 @@ variable "nat_rule_collection_action" {
 // NAT Rule Collection Rules
 variable "nat_rule" {
   type = map(object({
-    description           = optional(string)
-    protocols             = list(string)
-    source_addresses      = optional(list(string))
-    source_ip_groups      = optional(list(string))
-    destination_addresses = optional(list(string))
-    destination_ports     = optional(list(number))
-    translated_address    = optional(string)
-    translated_fqdn       = optional(string)
-    translated_port       = number
+    description         = optional(string)
+    protocols           = list(string)
+    source_addresses    = optional(list(string))
+    source_ip_groups    = optional(list(string))
+    destination_address = optional(list(string))
+    destination_ports   = optional(list(number))
+    translated_address  = optional(string)
+    translated_fqdn     = optional(string)
+    translated_port     = number
   }))
+  nullable = true
+  default  = {}
+
   description = <<DESCRIPTION
   The map of NAT Rules to use for the Azure Firewall Policy
   Each object in the list must contain the following attributes:
@@ -335,7 +360,7 @@ variable "lock" {
 
 
   })
-  description = "The lock level to apply to the Virtual Network. Default is `None`. Possible values are `None`, `CanNotDelete`, and `ReadOnly`."
+  description = "The lock level to apply to the Firewall Policy. Default is `None`. Possible values are `None`, `CanNotDelete`, and `ReadOnly`."
   default     = {}
   nullable    = false
   validation {

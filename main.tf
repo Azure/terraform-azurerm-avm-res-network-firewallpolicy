@@ -17,8 +17,8 @@ resource "azurerm_firewall_policy" "firewall_policy" {
 
 resource "azurerm_firewall_policy_rule_collection_group" "firewall_policy_collection_group" {
   for_each           = var.rule_collection_group
-  name               = coalesce(each.value.name, "rule-collection-group-${var.fw_policy_name}")
-  firewall_policy_id = each.value.firewall_policy_id
+  name               = each.value.name
+  firewall_policy_id = azurerm_firewall_policy.firewall_policy.id
   priority           = each.value.priority
 
   application_rule_collection {
@@ -28,11 +28,20 @@ resource "azurerm_firewall_policy_rule_collection_group" "firewall_policy_collec
     dynamic "rule" {
       for_each = var.app_rule
       content {
-        name = coalesce(each.value.app_rule.name, "app-rule-${var.app_rule_collection_name}")
+        name              = each.value.name
+        description       = rule.value.description
+        source_addresses  = rule.value.source_addresses
+        destination_fqdns = rule.value.destination_fqdns
         protocols {
-          type = each.value.protocols.type
-          port = each.value.protocols.port
+          type = rule.value.protocols[0].type
+          port = rule.value.protocols[0].port
         }
+        source_ip_groups      = rule.value.source_ip_groups
+        destination_addresses = rule.value.destination_addresses
+        destination_fqdn_tags = rule.value.destination_fqdn_tags
+        destination_urls      = rule.value.destination_urls
+        terminate_tls         = rule.value.terminate_tls
+        web_categories        = rule.value.web_categories
       }
     }
   }
@@ -44,9 +53,15 @@ resource "azurerm_firewall_policy_rule_collection_group" "firewall_policy_collec
     dynamic "rule" {
       for_each = var.net_rule
       content {
-        name              = coalesce(each.value.net_rule.name, "net-rule-${var.net_rule_collection_name}")
-        protocols         = each.value.net_rule.protocols
-        destination_ports = each.value.net_rule.destination_ports
+        name                  = each.value.name
+        description           = rule.value.description
+        protocols             = rule.value.protocols
+        destination_ports     = [rule.value.destination_ports]
+        source_addresses      = rule.value.source_addresses
+        destination_addresses = rule.value.destination_addresses
+        source_ip_groups      = rule.value.source_ip_groups
+        destination_ip_groups = rule.value.destination_ip_groups
+        destination_fqdns     = rule.value.destination_fqdns
       }
     }
   }
@@ -58,9 +73,16 @@ resource "azurerm_firewall_policy_rule_collection_group" "firewall_policy_collec
     dynamic "rule" {
       for_each = var.nat_rule
       content {
-        name            = coalesce(each.value.nat_rule.name, "nat-rule-${var.nat_rule_collection_name}")
-        protocols       = each.value.nat_rule.protocols
-        translated_port = each.value.nat_rule.translated_port
+        name                = each.value.name
+        description         = rule.value.description
+        protocols           = rule.value.protocols
+        translated_port     = rule.value.translated_port
+        translated_address  = rule.value.translated_address
+        source_addresses    = rule.value.source_addresses
+        destination_address = rule.value.destination_addresses
+        source_ip_groups    = rule.value.source_ip_groups
+        destination_ports   = rule.value.destination_ports
+        translated_fqdn     = rule.value.translated_fqdn
       }
     }
   }
