@@ -18,16 +18,6 @@ resource "random_integer" "region_index" {
   max = length(local.azure_regions) - 1
 }
 
-variable "enable_telemetry" {
-  type        = bool
-  default     = true
-  description = <<DESCRIPTION
-This variable controls whether or not telemetry is enabled for the module.
-For more information see https://aka.ms/avm/telemetryinfo.
-If it is set to false, then no telemetry will be collected.
-DESCRIPTION
-}
-
 # This ensures we have unique CAF compliant names for our resources.
 module "naming" {
   source  = "Azure/naming/azurerm"
@@ -43,7 +33,7 @@ resource "azurerm_resource_group" "this" {
 # This is the module call
 module "firewall_policy" {
   source = "../.."
-  # source             = "Azure/avm-<res/ptn>-<name>/azurerm"
+  # source             = "Azure/avm-res-network-firewallpolicy/azurerm"
   enable_telemetry    = var.enable_telemetry
   fw_policy_name      = "firewall-policy"
   resource_group_name = azurerm_resource_group.this.name
@@ -57,6 +47,7 @@ module "firewall_policy" {
       priority = 300
   } }
 
+  /*
   app_rule_collection_name     = "app-rule-collection"
   app_rule_collection_priority = 400
   app_rule_collection_action   = "Allow"
@@ -83,7 +74,7 @@ module "firewall_policy" {
       destination_ports = 80
     }
   }
-  nat_rule_collection_name     = "nat-rule-collection"
+    nat_rule_collection_name     = "nat-rule-collection"
   nat_rule_collection_priority = 600
   nat_rule_collection_action   = "Dnat"
   nat_rule = {
@@ -93,4 +84,5 @@ module "firewall_policy" {
       translated_port    = 8080
     }
   }
+*/
 }
