@@ -41,49 +41,4 @@ module "firewall_policy" {
   sku                 = "Standard"
   proxy_enabled       = false
   threat_intel_mode   = "Alert"
-  rule_collection_group = {
-    group1 = {
-      name     = "rule-collection-group"
-      priority = 300
-      firewall_policy_id = module.firewall_policy.firewall_policy.id
-  } }
-
-  /*
-  app_rule_collection_name     = "app-rule-collection"
-  app_rule_collection_priority = 400
-  app_rule_collection_action   = "Allow"
-  app_rule = {
-    rule1 = {
-      source_addresses  = ["*"]
-      destination_fqdns = ["*.microsoft.com"]
-      protocols = [
-        {
-          type = "Http"
-          port = 80
-        }
-      ]
-    }
-  }
-
-  net_rule_collection_name     = "net-rule-collection"
-  net_rule_collection_priority = 500
-  net_rule_collection_action   = "Allow"
-  net_rule = {
-    rule1 = {
-      name              = "net-rule"
-      protocols         = ["TCP"]
-      destination_ports = 80
-    }
-  }
-    nat_rule_collection_name     = "nat-rule-collection"
-  nat_rule_collection_priority = 600
-  nat_rule_collection_action   = "Dnat"
-  nat_rule = {
-    rule1 = {
-      protocols          = ["TCP", "UDP"]
-      translated_address = "192.168.10.0"
-      translated_port    = 8080
-    }
-  }
-*/
 }
