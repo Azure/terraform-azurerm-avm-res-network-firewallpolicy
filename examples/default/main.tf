@@ -45,6 +45,7 @@ module "firewall_policy" {
     group1 = {
       name     = "rule-collection-group"
       priority = 300
+      firewall_policy_id = module.firewall_policy.firewall_policy.id
   } }
 
   /*

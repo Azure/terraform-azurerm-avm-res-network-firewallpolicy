@@ -72,6 +72,7 @@ variable "rule_collection_group" {
     firewall_policy_id = string
   }))
   default     = {}
+  nullable = false
   description = <<DESCRIPTION
   The map of Rule Collection Groups to use for the Azure Firewall Policy. Name and Priority are required atrributes for Rule Collection Group.
   You can create multiple Rule Collection Groups for different rule types i.e. Network, Application, NAT or you can use one Rule Collection Group for all rule types.
@@ -87,7 +88,7 @@ variable "rule_collection_group" {
   ```
   DESCRIPTION
     validation {
-    condition     = var.rule_collection_group >= 100 && var.app_rule_collection_priority <= 65000
+    condition     = alltrue([for r in var.rule_collection_group : r.priority >= 100 && r.priority <= 65000])
     error_message = "The priority must be between 100 and 65000"
   }
 }
@@ -103,11 +104,11 @@ variable "app_rule_collection_name" {
 variable "app_rule_collection_priority" {
   type        = number
   description = "The priority of the Azure Firewall Policy Application Rule Collection."
+  default     = null
   validation {
     condition     = var.app_rule_collection_priority == null ? true : var.app_rule_collection_priority >= 100 && var.app_rule_collection_priority <= 65000
     error_message = "The priority must be between 100 and 65000"
   }
-  default = null
 }
 
 variable "app_rule_collection_action" {
@@ -137,7 +138,7 @@ variable "app_rule" {
     destination_fqdns_tags = optional(list(string))
     terminate_tls          = optional(bool)
     web_categories         = optional(list(string))
-  }), null)
+  }))
   default  = {}
 
   description = <<DESCRIPTION
@@ -184,18 +185,17 @@ variable "net_rule_collection_name" {
 
 variable "net_rule_collection_priority" {
   type        = number
-  description = "The priority of the Azure Firewall Policy Network Rule Collection."
+  default = null
   validation {
     condition     = var.net_rule_collection_priority == null ? true : var.net_rule_collection_priority >= 100 && var.net_rule_collection_priority <= 65000
     error_message = "The priority must be between 100 and 65000"
   }
-  default = {}
 }
 
 variable "net_rule_collection_action" {
   type        = string
   description = "value of the action for the Azure Firewall Policy Network Rule Collection."
-  default = {}
+  default = null
   validation {
     condition     = var.net_rule_collection_action == null ? true : contains(["Allow", "Deny"], var.net_rule_collection_action)
     error_message = "The action must be one of the following: Allow, Deny"
@@ -244,13 +244,11 @@ variable "net_rule" {
   ```
 
   DESCRIPTION
- validation {
-   condition = var.net_rule.protocols == null ? true : contains(["Any", "TCP", "UDP", "ICMP"], var.net_rule.protocols)
-   error_message = "The acceptable values for protocols.type are Any, TCP, UDP, or ICMP"
-  }
+validation {
+  condition     = length(var.net_rule) == 0 ? true : contains(["Any", "TCP", "UDP", "ICMP"], var.net_rule.protocols)
+  error_message = "The protocols must be one of: 'Any', 'TCP', 'UDP', or 'ICMP'."
+ }
 }
- 
-
 // NAT Rule Collection
 
 variable "nat_rule_collection_name" {
@@ -262,7 +260,7 @@ variable "nat_rule_collection_name" {
 variable "nat_rule_collection_priority" {
   type        = number
   description = "The priority of the Azure Firewall Policy NAT Rule Collection."
-  default = {}
+  default = null
   validation {
     condition     = var.nat_rule_collection_priority == null ? true : var.nat_rule_collection_priority >= 100 && var.nat_rule_collection_priority <= 65000
     error_message = "The priority must be between 100 and 65000"
@@ -272,7 +270,7 @@ variable "nat_rule_collection_priority" {
 variable "nat_rule_collection_action" {
   type        = string
   description = "value of the action for the Azure Firewall Policy NAT Rule Collection."
-  default = {}
+  default = null
   validation {
     condition     = var.nat_rule_collection_action == null ? true : contains(["Dnat", "Snat"], var.nat_rule_collection_action)
     error_message = "The action must be one of the following: Dnat, Snat"
@@ -284,14 +282,14 @@ variable "nat_rule" {
   type = map(object({
     description         = optional(string, null)
     protocols           = list(string)
-    source_addresses    = optional(list(string, null))
-    source_ip_groups    = optional(list(string, null))
-    destination_address = optional(list(string, null))
-    destination_ports   = optional(list(number, null))
+    source_addresses    = optional(list(string))
+    source_ip_groups    = optional(list(string))
+    destination_address = optional(list(string))
+    destination_ports   = optional(list(number))
     translated_address  = optional(string, null)
     translated_fqdn     = optional(string, null)
     translated_port     = number
-  }), null)
+  }))
   default  = {}
 
   description = <<DESCRIPTION
