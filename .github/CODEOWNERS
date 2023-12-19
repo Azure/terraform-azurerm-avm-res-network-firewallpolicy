@@ -1,3 +1,6 @@
 # AVM core team owns key files
 .github/policies/ @Azure/avm-core-team-technical
 .github/CODEOWNERS @Azure/avm-core-team-technical
+
+* @azure/avm-res-network-firewallpolicy-module-owners-tf
+* @azure/avm-res-network-firewallpolicy-module-contributors-tf
