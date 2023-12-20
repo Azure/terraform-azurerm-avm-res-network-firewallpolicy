@@ -7,7 +7,7 @@ resource "azurerm_firewall_policy" "this" {
   private_ip_ranges                 = var.firewall_policy_private_ip_ranges
   sku                               = var.firewall_policy_sku
   sql_redirect_allowed              = var.firewall_policy_sql_redirect_allowed
-  tags                              = var.firewall_policy_tags
+  tags                              = var.tags
   threat_intelligence_mode          = var.firewall_policy_threat_intelligence_mode
 
   dynamic "dns" {
