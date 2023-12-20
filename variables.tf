@@ -248,8 +248,9 @@ variable "role_assignments" {
 }
 
 variable "tags" {
-  type    = map(any)
-  default = {}
+  type        = map(string)
+  default     = null
+  description = "(Optional) A mapping of tags to assign to the resource."
 }
 
 variable "diagnostic_settings" {

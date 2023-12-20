@@ -389,11 +389,11 @@ Default: `{}`
 
 ### <a name="input_tags"></a> [tags](#input\_tags)
 
-Description: n/a
+Description: (Optional) A mapping of tags to assign to the resource.
 
-Type: `map(any)`
+Type: `map(string)`
 
-Default: `{}`
+Default: `null`
 
 ## Outputs
 
