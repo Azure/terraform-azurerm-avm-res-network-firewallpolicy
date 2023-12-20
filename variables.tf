@@ -155,12 +155,6 @@ variable "firewall_policy_sql_redirect_allowed" {
   description = "(Optional) Whether SQL Redirect traffic filtering is allowed. Enabling this flag requires no rule using ports between `11000`-`11999`."
 }
 
-variable "firewall_policy_tags" {
-  type        = map(string)
-  default     = null
-  description = "(Optional) A mapping of tags which should be assigned to the Firewall Policy."
-}
-
 variable "firewall_policy_threat_intelligence_allowlist" {
   type = object({
     fqdns        = optional(set(string))

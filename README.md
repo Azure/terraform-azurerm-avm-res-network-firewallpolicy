@@ -275,14 +275,6 @@ Type: `bool`
 
 Default: `null`
 
-### <a name="input_firewall_policy_tags"></a> [firewall\_policy\_tags](#input\_firewall\_policy\_tags)
-
-Description: (Optional) A mapping of tags which should be assigned to the Firewall Policy.
-
-Type: `map(string)`
-
-Default: `null`
-
 ### <a name="input_firewall_policy_threat_intelligence_allowlist"></a> [firewall\_policy\_threat\_intelligence\_allowlist](#input\_firewall\_policy\_threat\_intelligence\_allowlist)
 
 Description: - `fqdns` - (Optional) A list of FQDNs that will be skipped for threat detection.
