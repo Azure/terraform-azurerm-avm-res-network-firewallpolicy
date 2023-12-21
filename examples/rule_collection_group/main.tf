@@ -43,3 +43,12 @@ module "firewall_policy" {
   location            = azurerm_resource_group.this.location
   resource_group_name = azurerm_resource_group.this.name
 }
+
+# This is the rule collection group
+
+resource "azurerm_firewall_policy_rule_collection_group" "this" {
+  name               = module.naming.firewall_policy_rule_collection_group.name_unique
+  firewall_policy_id = module.firewall_policy.id
+  priority           = 300
+}
+
