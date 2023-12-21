@@ -54,7 +54,7 @@ module "firewall_policy" {
 
 resource "azurerm_firewall_policy_rule_collection_group" "this" {
   name               = module.naming.firewall_policy_rule_collection_group.name_unique
-  firewall_policy_id = azurerm_firewall_policy.this.id
+  firewall_policy_id = module.firewall_policy.id
   priority           = 300
 }
 
