@@ -1,7 +1,7 @@
 <!-- BEGIN_TF_DOCS -->
-# Default example
+# Deploying Rule Collection Group with Azure Firewall Policy
 
-This deploys the module in its simplest form.
+This deploys deploys a Rule Collection Group with Azure Firewall Policy.
 
 ```hcl
 terraform {
@@ -45,10 +45,19 @@ module "firewall_policy" {
   source = "../.."
   # source             = "Azure/avm-res-network-firewallpolicy/azurerm"
   enable_telemetry    = var.enable_telemetry
-  name                = azurerm_resource_group.this.name
+  name                = module.naming.firewall_policy.name_unique
   location            = azurerm_resource_group.this.location
   resource_group_name = azurerm_resource_group.this.name
 }
+
+# This is the rule collection group
+
+resource "azurerm_firewall_policy_rule_collection_group" "this" {
+  name               = module.naming.firewall_policy_rule_collection_group.name_unique
+  firewall_policy_id = module.firewall_policy.firewall_policy_id
+  priority           = 300
+}
+
 ```
 
 <!-- markdownlint-disable MD033 -->
@@ -74,6 +83,7 @@ The following providers are used by this module:
 
 The following resources are used by this module:
 
+- [azurerm_firewall_policy_rule_collection_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/firewall_policy_rule_collection_group) (resource)
 - [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
 - [random_integer.region_index](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/integer) (resource)
 
