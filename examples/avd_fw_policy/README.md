@@ -1,7 +1,7 @@
 <!-- BEGIN_TF_DOCS -->
 # Deploying Rule Collection Group with Azure Firewall Policy
 
-This deploys a Rule Collection Group with Azure Firewall Policy.
+This deploys deploys a Rule Collection Group with Azure Firewall Policy.
 
 ```hcl
 terraform {
