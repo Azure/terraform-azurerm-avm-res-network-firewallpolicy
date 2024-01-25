@@ -15,7 +15,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  docs:
     if: github.event.repository.name != 'terraform-azurerm-avm-template'
     name: docs
     runs-on: ubuntu-latest
