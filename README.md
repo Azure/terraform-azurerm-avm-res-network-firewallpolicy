@@ -399,6 +399,10 @@ Description: The ID of the Firewall Policy.
 
 Description: The name of the Firewall Policy.
 
+### <a name="output_resource"></a> [resource](#output\_resource)
+
+Description: The Firewall Policy resource.
+
 ## Modules
 
 No modules.
