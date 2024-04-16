@@ -156,7 +156,7 @@ module "avd_optional_rule_collection_group" {
   # source             = "Azure/avm-res-network-firewallpolicy/azurerm//modules/rule_collection_groups"
   firewall_policy_rule_collection_group_firewall_policy_id = module.firewall_policy.resource.id
   firewall_policy_rule_collection_group_name               = "AVDOptionalRuleCollectionGroup"
-  firewall_policy_rule_collection_group_priority           = 1000
+  firewall_policy_rule_collection_group_priority           = 1050
   firewall_policy_rule_collection_group_network_rule_collection = [{
     action   = "Allow"
     name     = "AVDOptionalNetworkRules"
@@ -257,6 +257,52 @@ module "avd_optional_rule_collection_group" {
             type = "Https"
           }
         ]
+      }
+    ]
+    }
+  ]
+}
+
+module "m365rulecollectiongroup" {
+  source = "../../modules/rule_collection_groups"
+  # source             = "Azure/avm-res-network-firewallpolicy/azurerm//modules/rule_collection_groups"
+  firewall_policy_rule_collection_group_firewall_policy_id = module.firewall_policy.resource.id
+  firewall_policy_rule_collection_group_name               = "M365RuleCollectionGroup"
+  firewall_policy_rule_collection_group_priority           = 2000
+  firewall_policy_rule_collection_group_network_rule_collection = [{
+    action   = "Allow"
+    name     = "M365NetworkRules"
+    priority = 500
+    rule = [
+      {
+        name                  = "M365"
+        source_addresses      = ["10.0.0.0/24"]
+        destination_addresses = ["Office365.Common.Allow.Required"]
+        protocols             = ["TCP"]
+        destination_ports     = ["443"]
+      }
+    ]
+    }
+  ]
+}
+
+module "internetrulecollectiongroup" {
+  source = "../../modules/rule_collection_groups"
+  # source             = "Azure/avm-res-network-firewallpolicy/azurerm//modules/rule_collection_groups"
+  firewall_policy_rule_collection_group_firewall_policy_id = module.firewall_policy.resource.id
+  firewall_policy_rule_collection_group_name               = "InternetRuleCollectionGroup"
+  firewall_policy_rule_collection_group_priority           = 3000
+  firewall_policy_rule_collection_group_network_rule_collection = [{
+    action   = "Allow"
+    name     = "InternetNetworkRules"
+    priority = 500
+    rule = [
+      {
+        name                  = "Internet"
+        source_addresses      = ["10.0.0.0/24"]
+        destination_addresses = ["*"]
+        protocols             = ["TCP"]
+        destination_ports     = ["443", "80"]
       }
     ]
     }
