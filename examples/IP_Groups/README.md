@@ -42,6 +42,7 @@ resource "azurerm_resource_group" "rg" {
 
 module "vnet" {
   source                        = "Azure/avm-res-network-virtualnetwork/azurerm"
+  version                       = ">= 0.1.4"
   enable_telemetry              = var.enable_telemetry
   location                      = azurerm_resource_group.rg.location
   resource_group_name           = azurerm_resource_group.rg.name
@@ -82,6 +83,7 @@ resource "azurerm_ip_group" "ipgroup_2" {
 # This is the module call
 module "firewall" {
   source              = "Azure/avm-res-network-azurefirewall/azurerm"
+  version             = ">= 0.1.3"
   name                = module.naming.firewall.name
   enable_telemetry    = var.enable_telemetry
   location            = azurerm_resource_group.rg.location
@@ -212,7 +214,7 @@ The following Modules are called:
 
 Source: Azure/avm-res-network-azurefirewall/azurerm
 
-Version:
+Version: >= 0.1.3
 
 ### <a name="module_firewall_policy"></a> [firewall\_policy](#module\_firewall\_policy)
 
@@ -236,7 +238,7 @@ Version:
 
 Source: Azure/avm-res-network-virtualnetwork/azurerm
 
-Version:
+Version: >= 0.1.4
 
 <!-- markdownlint-disable-next-line MD041 -->
 ## Data Collection
