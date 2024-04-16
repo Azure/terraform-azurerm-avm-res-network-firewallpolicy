@@ -402,10 +402,6 @@ Examples:
 - module.firewall\_policy.resource.child\_policies
 - module.firewall\_policy.resource.rule\_collection\_groups
 
-### <a name="output_resource"></a> [resource](#output\_resource)
-
-Description: The Firewall Policy resource.
-
 ## Modules
 
 No modules.
