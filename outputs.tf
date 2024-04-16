@@ -11,4 +11,3 @@ output "resource" {
   - module.firewall_policy.resource.rule_collection_groups
   EOT
 }
-
