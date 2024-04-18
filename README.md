@@ -395,7 +395,7 @@ The following outputs are exported:
 
 ### <a name="output_resource"></a> [resource](#output\_resource)
 
-Description: "This output is for Firewall Policy resource. This is the default output for the module following AVM standards. Review the examples below for the correct output to use in your module."  
+Description: "This is the full output for Firewall Policy resource. This is the default output for the module following AVM standards. Review the examples below for the correct output to use in your module."  
 Examples:
 - module.firewall\_policy.resource.id
 - module.firewall\_policy.resource.firewalls
