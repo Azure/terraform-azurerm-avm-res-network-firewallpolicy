@@ -55,7 +55,6 @@ resource "azurerm_firewall_policy_rule_collection_group" "this" {
           name                = rule.value.name
           protocols           = rule.value.protocols
           translated_port     = rule.value.translated_port
-          description         = rule.value.description
           destination_address = rule.value.destination_address
           destination_ports   = rule.value.destination_ports
           source_addresses    = rule.value.source_addresses
@@ -79,7 +78,6 @@ resource "azurerm_firewall_policy_rule_collection_group" "this" {
           destination_ports     = rule.value.destination_ports
           name                  = rule.value.name
           protocols             = rule.value.protocols
-          description           = rule.value.description
           destination_addresses = rule.value.destination_addresses
           destination_fqdns     = rule.value.destination_fqdns
           destination_ip_groups = rule.value.destination_ip_groups
