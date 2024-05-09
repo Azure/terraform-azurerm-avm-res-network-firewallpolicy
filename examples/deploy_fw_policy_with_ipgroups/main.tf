@@ -18,8 +18,8 @@ provider "azurerm" {
 
 # This picks a random region from the list of regions.
 resource "random_integer" "region_index" {
-  min = 0
   max = length(local.azure_regions) - 1
+  min = 0
 }
 
 # This ensures we have unique CAF compliant names for our resources.
@@ -30,8 +30,8 @@ module "naming" {
 
 # This is required for resource modules
 resource "azurerm_resource_group" "rg" {
-  name     = module.naming.resource_group.name_unique
   location = local.azure_regions[random_integer.region_index.result]
+  name     = module.naming.resource_group.name_unique
 }
 
 module "vnet" {
@@ -45,32 +45,32 @@ module "vnet" {
 }
 
 resource "azurerm_subnet" "subnet" {
+  address_prefixes     = ["10.1.0.0/26"]
   name                 = "AzureFirewallSubnet"
   resource_group_name  = azurerm_resource_group.rg.name
   virtual_network_name = module.vnet.vnet_resource.name
-  address_prefixes     = ["10.1.0.0/26"]
 }
 
 resource "azurerm_public_ip" "pip" {
+  allocation_method   = "Static"
+  location            = azurerm_resource_group.rg.location
   name                = "pip"
   resource_group_name = azurerm_resource_group.rg.name
-  location            = azurerm_resource_group.rg.location
-  allocation_method   = "Static"
   sku                 = "Standard"
   zones               = ["1", "2", "3"]
 }
 
 resource "azurerm_ip_group" "ipgroup_1" {
+  location            = azurerm_resource_group.rg.location
   name                = "ipgroup1"
   resource_group_name = azurerm_resource_group.rg.name
-  location            = azurerm_resource_group.rg.location
   cidrs               = ["192.168.0.1", "172.16.240.0/20", "10.48.0.0/12"]
 }
 
 resource "azurerm_ip_group" "ipgroup_2" {
+  location            = azurerm_resource_group.rg.location
   name                = "ipgroup2"
   resource_group_name = azurerm_resource_group.rg.name
-  location            = azurerm_resource_group.rg.location
   cidrs               = ["10.100.10.0/24", "192.100.10.4", "10.150.20.20"]
 }
 

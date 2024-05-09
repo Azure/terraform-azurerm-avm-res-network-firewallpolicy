@@ -40,3 +40,4 @@ locals {
   # This ensures we don't get errors if telemetry is disabled.
   telem_random_hex = can(random_id.telem[0].hex) ? random_id.telem[0].hex : ""
 }
+
