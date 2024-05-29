@@ -104,7 +104,6 @@ resource "azurerm_firewall_policy" "this" {
   }
 }
 
-
 # Assigning Roles to the Virtual Network based on the provided configurations.
 resource "azurerm_role_assignment" "this" {
   for_each = var.role_assignments
@@ -151,3 +150,12 @@ resource "azurerm_monitor_diagnostic_setting" "this" {
   }
 }
 
+# required AVM resources interfaces
+resource "azurerm_management_lock" "this" {
+  count = var.lock != null ? 1 : 0
+
+  lock_level = var.lock.kind
+  name       = coalesce(var.lock.name, "lock-${var.lock.kind}")
+  scope      = azurerm_firewall_policy.this.id # TODO: Replace with your azurerm resource name
+  notes      = var.lock.kind == "CanNotDelete" ? "Cannot delete the resource or its child resources." : "Cannot delete or modify the resource or its child resources."
+}

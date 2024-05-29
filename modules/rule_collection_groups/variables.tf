@@ -1,4 +1,3 @@
-
 variable "firewall_policy_rule_collection_group_firewall_policy_id" {
   type        = string
   description = "(Required) The ID of the Firewall Policy where the Firewall Policy Rule Collection Group should exist. Changing this forces a new Firewall Policy Rule Collection Group to be created."
@@ -165,4 +164,3 @@ variable "firewall_policy_rule_collection_group_timeouts" {
  - `update` - (Defaults to 30 minutes) Used when updating the Firewall Policy Rule Collection Group.
 EOT
 }
-
