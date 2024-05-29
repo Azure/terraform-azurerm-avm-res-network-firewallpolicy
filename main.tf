@@ -104,7 +104,6 @@ resource "azurerm_firewall_policy" "this" {
   }
 }
 
-
 # Assigning Roles to the Virtual Network based on the provided configurations.
 resource "azurerm_role_assignment" "this" {
   for_each = var.role_assignments

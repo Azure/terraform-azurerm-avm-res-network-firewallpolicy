@@ -353,24 +353,6 @@ object({
 
 Default: `null`
 
-### <a name="input_managed_identities"></a> [managed\_identities](#input\_managed\_identities)
-
-Description:   Controls the Managed Identity configuration on this resource. The following properties can be specified:
-
-  - `system_assigned` - (Optional) Specifies if the System Assigned Managed Identity should be enabled.
-  - `user_assigned_resource_ids` - (Optional) Specifies a list of User Assigned Managed Identity resource IDs to be assigned to this resource.
-
-Type:
-
-```hcl
-object({
-    system_assigned            = optional(bool, false)
-    user_assigned_resource_ids = optional(set(string), [])
-  })
-```
-
-Default: `{}`
-
 ### <a name="input_role_assignments"></a> [role\_assignments](#input\_role\_assignments)
 
 Description:   A map of role assignments to create on the <RESOURCE>. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
