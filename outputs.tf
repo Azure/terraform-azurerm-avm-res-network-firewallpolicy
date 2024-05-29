@@ -9,3 +9,8 @@ output "resource" {
   EOT
   value       = azurerm_firewall_policy.this
 }
+
+output "resource_id" {
+  description = "the resource id of the firewall policy"
+  value       = azurerm_firewall_policy.this.id
+}
