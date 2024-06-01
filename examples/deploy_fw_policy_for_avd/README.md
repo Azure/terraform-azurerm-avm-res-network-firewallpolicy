@@ -66,101 +66,84 @@ module "avd_core_rule_collection_group" {
   firewall_policy_rule_collection_group_priority           = 1000
   firewall_policy_rule_collection_group_network_rule_collection = [{
     action   = "Allow"
-    name     = "AVDRequiredNetworkRules"
+    name     = "AVDCoreNetworkRules"
     priority = 500
     rule = [
       {
         name              = "Login to Microsoft"
-        source_addresses  = ["10.0.0.0/24"]
+        source_addresses  = ["10.100.0.0/24"]
         destination_fqdns = ["login.microsoftonline.com"]
         protocols         = ["TCP"]
         destination_ports = ["443"]
-      }
-    ]
-    rule = [
+      },
       {
         name                  = "AVD"
-        source_addresses      = ["10.0.0.0/24"]
+        source_addresses      = ["10.100.0.0/24"]
         destination_addresses = ["WindowsVirtualDesktop", "AzureFrontDoor.Frontend", "AzureMonitor"]
         protocols             = ["TCP"]
         destination_ports     = ["443"]
-      }
-    ]
-    rule = [
+      },
       {
         name              = "GCS"
-        source_addresses  = [" 10.0.0.0/24"]
+        source_addresses  = ["10.100.0.0/24"]
         destination_fqdns = ["gcs.prod.monitoring.core.windows.net"]
         protocols         = ["TCP"]
         destination_ports = ["443"]
-      }
-    ]
-    rule = [
+      },
       {
         name                  = "DNS"
-        source_addresses      = ["10.0.0.0/24"]
+        source_addresses      = ["10.100.0.0/24"]
         destination_addresses = ["AzureDNS"]
         protocols             = ["TCP", "UDP"]
         destination_ports     = ["53"]
-      }
-    ]
-    rule = [
+      },
       {
         name              = "azkms"
-        source_addresses  = ["10.0.0.0/24"]
+        source_addresses  = ["10.100.0.0/24"]
         destination_fqdns = ["azkms.core.windows.net"]
         protocols         = ["TCP"]
         destination_ports = ["1688"]
-      }
-    ]
-    rule = [
+      },
       {
         name              = "KMS"
-        source_addresses  = ["10.0.0.0/24"]
+        source_addresses  = ["10.100.0.0/24"]
         destination_fqdns = ["kms.core.windows.net"]
         protocols         = ["TCP"]
         destination_ports = ["1688"]
-      }
-    ]
-    rule = [
+      },
       {
         name              = "mrglobalblob"
-        source_addresses  = ["10.0.0.0/24"]
+        source_addresses  = ["10.100.0.0/24"]
         destination_fqdns = ["mrsglobalsteus2prod.blob.core.windows.net"]
         protocols         = ["TCP"]
         destination_ports = ["443"]
-      }
-    ]
-    rule = [
+      },
       {
         name              = "wvdportalstorageblob"
-        source_addresses  = ["10.0.0.0/24"]
+        source_addresses  = ["10.100.0.0/24"]
         destination_fqdns = ["wvdportalstorageblob.blob.core.windows.net"]
         protocols         = ["TCP"]
         destination_ports = ["443"]
-      }
-    ]
-    rule = [
+      },
       {
         name              = "oneocsp"
-        source_addresses  = ["10.0.0.0/24"]
+        source_addresses  = ["10.100.0.0/24"]
         destination_fqdns = ["oneocsp.microsoft.com"]
         protocols         = ["TCP"]
         destination_ports = ["443"]
-      }
-    ]
-    rule = [
+      },
       {
         name              = "microsoft.com"
-        source_addresses  = ["10.0.0.0/24"]
+        source_addresses  = ["10.100.0.0/24"]
         destination_fqdns = ["www.microsoft.com"]
         protocols         = ["TCP"]
         destination_ports = ["443"]
-      }
+      },
     ]
     }
   ]
 }
+
 
 module "avd_optional_rule_collection_group" {
   source = "../../modules/rule_collection_groups"
@@ -179,28 +162,25 @@ module "avd_optional_rule_collection_group" {
         destination_fqdns = ["time.windows.com"]
         protocols         = ["UDP"]
         destination_ports = ["123"]
-      }
-    ]
-    rule = [
+      },
       {
         name              = "login windows.net"
         source_addresses  = ["10.0.0.0/24"]
         destination_fqdns = ["login.windows.net"]
         protocols         = ["TCP"]
         destination_ports = ["443"]
-      }
-    ]
-    rule = [
+      },
       {
         name              = "msftconnecttest"
         source_addresses  = ["10.0.0.0/24"]
         destination_fqdns = ["www.msftconnecttest.com"]
         protocols         = ["TCP"]
         destination_ports = ["443"]
-      }
+      },
     ]
-    }
+  }
   ]
+
   firewall_policy_rule_collection_group_application_rule_collection = [{
     action   = "Allow"
     name     = "AVDOptionalApplicationRules"
@@ -216,9 +196,7 @@ module "avd_optional_rule_collection_group" {
             type = "Https"
           }
         ]
-      }
-    ]
-    rule = [
+      },
       {
         name              = "Events"
         source_addresses  = ["10.0.0.0/24"]
@@ -229,9 +207,7 @@ module "avd_optional_rule_collection_group" {
             type = "Https"
           }
         ]
-      }
-    ]
-    rule = [
+      },
       {
         name              = "sfx"
         source_addresses  = ["10.0.0.0/24"]
@@ -242,9 +218,7 @@ module "avd_optional_rule_collection_group" {
             type = "Https"
           }
         ]
-      }
-    ]
-    rule = [
+      },
       {
         name              = "digicert"
         source_addresses  = ["10.0.0.0/24"]
@@ -255,9 +229,7 @@ module "avd_optional_rule_collection_group" {
             type = "Https"
           }
         ]
-      }
-    ]
-    rule = [
+      },
       {
         name              = "Azure DNS"
         source_addresses  = ["10.0.0.0/24"]
@@ -268,7 +240,7 @@ module "avd_optional_rule_collection_group" {
             type = "Https"
           }
         ]
-      }
+      },
     ]
     }
   ]
