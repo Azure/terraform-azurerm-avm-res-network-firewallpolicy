@@ -120,7 +120,7 @@ resource "azurerm_firewall_policy_rule_collection_group" "this" {
 
 The following requirements are needed by this module:
 
-- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (>= 1.5.0)
+- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.5)
 
 - <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (~> 3.71)
 
@@ -139,7 +139,25 @@ The following resources are used by this module:
 <!-- markdownlint-disable MD013 -->
 ## Required Inputs
 
-No required inputs.
+The following input variables are required:
+
+### <a name="input_firewall_policy_rule_collection_group_firewall_policy_id"></a> [firewall\_policy\_rule\_collection\_group\_firewall\_policy\_id](#input\_firewall\_policy\_rule\_collection\_group\_firewall\_policy\_id)
+
+Description: (Required) The ID of the Firewall Policy where the Firewall Policy Rule Collection Group should exist. Changing this forces a new Firewall Policy Rule Collection Group to be created.
+
+Type: `string`
+
+### <a name="input_firewall_policy_rule_collection_group_name"></a> [firewall\_policy\_rule\_collection\_group\_name](#input\_firewall\_policy\_rule\_collection\_group\_name)
+
+Description: (Required) The name which should be used for this Firewall Policy Rule Collection Group. Changing this forces a new Firewall Policy Rule Collection Group to be created.
+
+Type: `string`
+
+### <a name="input_firewall_policy_rule_collection_group_priority"></a> [firewall\_policy\_rule\_collection\_group\_priority](#input\_firewall\_policy\_rule\_collection\_group\_priority)
+
+Description: (Required) The priority of the Firewall Policy Rule Collection Group. The range is 100-65000.
+
+Type: `number`
 
 ## Optional Inputs
 
@@ -203,22 +221,6 @@ list(object({
     }))
   }))
 ```
-
-Default: `null`
-
-### <a name="input_firewall_policy_rule_collection_group_firewall_policy_id"></a> [firewall\_policy\_rule\_collection\_group\_firewall\_policy\_id](#input\_firewall\_policy\_rule\_collection\_group\_firewall\_policy\_id)
-
-Description: (Required) The ID of the Firewall Policy where the Firewall Policy Rule Collection Group should exist. Changing this forces a new Firewall Policy Rule Collection Group to be created.
-
-Type: `string`
-
-Default: `null`
-
-### <a name="input_firewall_policy_rule_collection_group_name"></a> [firewall\_policy\_rule\_collection\_group\_name](#input\_firewall\_policy\_rule\_collection\_group\_name)
-
-Description: (Required) The name which should be used for this Firewall Policy Rule Collection Group. Changing this forces a new Firewall Policy Rule Collection Group to be created.
-
-Type: `string`
 
 Default: `null`
 
@@ -303,14 +305,6 @@ list(object({
     }))
   }))
 ```
-
-Default: `null`
-
-### <a name="input_firewall_policy_rule_collection_group_priority"></a> [firewall\_policy\_rule\_collection\_group\_priority](#input\_firewall\_policy\_rule\_collection\_group\_priority)
-
-Description: (Required) The priority of the Firewall Policy Rule Collection Group. The range is 100-65000.
-
-Type: `number`
 
 Default: `null`
 

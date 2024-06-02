@@ -1,19 +1,19 @@
 variable "firewall_policy_rule_collection_group_firewall_policy_id" {
   type        = string
   description = "(Required) The ID of the Firewall Policy where the Firewall Policy Rule Collection Group should exist. Changing this forces a new Firewall Policy Rule Collection Group to be created."
-  default = null
+  nullable    = false
 }
 
 variable "firewall_policy_rule_collection_group_name" {
   type        = string
   description = "(Required) The name which should be used for this Firewall Policy Rule Collection Group. Changing this forces a new Firewall Policy Rule Collection Group to be created."
-  default = null
+  nullable    = false
 }
 
 variable "firewall_policy_rule_collection_group_priority" {
   type        = number
   description = "(Required) The priority of the Firewall Policy Rule Collection Group. The range is 100-65000."
-  default = null
+  nullable    = false
 }
 
 variable "firewall_policy_rule_collection_group_application_rule_collection" {

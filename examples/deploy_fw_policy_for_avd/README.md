@@ -178,7 +178,7 @@ module "avd_optional_rule_collection_group" {
         destination_ports = ["443"]
       },
     ]
-  }
+    }
   ]
 
   firewall_policy_rule_collection_group_application_rule_collection = [{
