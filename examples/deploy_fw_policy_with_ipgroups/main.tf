@@ -36,7 +36,7 @@ resource "azurerm_resource_group" "rg" {
 
 module "vnet" {
   source              = "Azure/avm-res-network-virtualnetwork/azurerm"
-  version             = ">=0.2.0"
+  version             = "0.2.0"
   enable_telemetry    = var.enable_telemetry
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
