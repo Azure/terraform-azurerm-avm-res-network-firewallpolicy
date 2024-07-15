@@ -6,7 +6,7 @@ terraform {
       version = "~> 3.71"
     }
     modtm = {
-      source  = "azure/modtm"
+      source  = "Azure/modtm"
       version = "~> 0.3"
     }
     random = {
