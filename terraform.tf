@@ -13,5 +13,9 @@ terraform {
       source  = "azure/modtm"
       version = "~> 0.3"
     }
+    azapi = {
+      source  = "azure/azapi"
+      version = "~> 1.13"
+    }
   }
 }
