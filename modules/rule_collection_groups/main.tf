@@ -5,6 +5,7 @@ resource "azurerm_firewall_policy_rule_collection_group" "this" {
 
   dynamic "application_rule_collection" {
     for_each = var.firewall_policy_rule_collection_group_application_rule_collection == null ? [] : var.firewall_policy_rule_collection_group_application_rule_collection
+
     content {
       action   = application_rule_collection.value.action
       name     = application_rule_collection.value.name
@@ -12,6 +13,7 @@ resource "azurerm_firewall_policy_rule_collection_group" "this" {
 
       dynamic "rule" {
         for_each = application_rule_collection.value.rule
+
         content {
           name                  = rule.value.name
           description           = rule.value.description
@@ -26,6 +28,7 @@ resource "azurerm_firewall_policy_rule_collection_group" "this" {
 
           dynamic "http_headers" {
             for_each = rule.value.http_headers == null ? [] : rule.value.http_headers
+
             content {
               name  = http_headers.value.name
               value = http_headers.value.value
@@ -33,6 +36,7 @@ resource "azurerm_firewall_policy_rule_collection_group" "this" {
           }
           dynamic "protocols" {
             for_each = rule.value.protocols == null ? [] : rule.value.protocols
+
             content {
               port = protocols.value.port
               type = protocols.value.type
@@ -44,6 +48,7 @@ resource "azurerm_firewall_policy_rule_collection_group" "this" {
   }
   dynamic "nat_rule_collection" {
     for_each = var.firewall_policy_rule_collection_group_nat_rule_collection == null ? [] : var.firewall_policy_rule_collection_group_nat_rule_collection
+
     content {
       action   = nat_rule_collection.value.action
       name     = nat_rule_collection.value.name
@@ -51,6 +56,7 @@ resource "azurerm_firewall_policy_rule_collection_group" "this" {
 
       dynamic "rule" {
         for_each = nat_rule_collection.value.rule
+
         content {
           name                = rule.value.name
           protocols           = rule.value.protocols
@@ -67,6 +73,7 @@ resource "azurerm_firewall_policy_rule_collection_group" "this" {
   }
   dynamic "network_rule_collection" {
     for_each = var.firewall_policy_rule_collection_group_network_rule_collection == null ? [] : var.firewall_policy_rule_collection_group_network_rule_collection
+
     content {
       action   = network_rule_collection.value.action
       name     = network_rule_collection.value.name
@@ -74,6 +81,7 @@ resource "azurerm_firewall_policy_rule_collection_group" "this" {
 
       dynamic "rule" {
         for_each = network_rule_collection.value.rule
+
         content {
           destination_ports     = rule.value.destination_ports
           name                  = rule.value.name
@@ -89,6 +97,7 @@ resource "azurerm_firewall_policy_rule_collection_group" "this" {
   }
   dynamic "timeouts" {
     for_each = var.firewall_policy_rule_collection_group_timeouts == null ? [] : [var.firewall_policy_rule_collection_group_timeouts]
+
     content {
       create = timeouts.value.create
       delete = timeouts.value.delete
