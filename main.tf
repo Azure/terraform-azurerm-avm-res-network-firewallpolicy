@@ -12,6 +12,7 @@ resource "azurerm_firewall_policy" "this" {
 
   dynamic "dns" {
     for_each = var.firewall_policy_dns == null ? [] : [var.firewall_policy_dns]
+
     content {
       proxy_enabled = dns.value.proxy_enabled
       servers       = dns.value.servers
@@ -19,6 +20,7 @@ resource "azurerm_firewall_policy" "this" {
   }
   dynamic "explicit_proxy" {
     for_each = var.firewall_policy_explicit_proxy == null ? [] : [var.firewall_policy_explicit_proxy]
+
     content {
       enable_pac_file = explicit_proxy.value.enable_pac_file
       enabled         = explicit_proxy.value.enabled
@@ -30,6 +32,7 @@ resource "azurerm_firewall_policy" "this" {
   }
   dynamic "identity" {
     for_each = var.firewall_policy_identity == null ? [] : [var.firewall_policy_identity]
+
     content {
       type         = identity.value.type
       identity_ids = identity.value.identity_ids
@@ -37,6 +40,7 @@ resource "azurerm_firewall_policy" "this" {
   }
   dynamic "insights" {
     for_each = var.firewall_policy_insights == null ? [] : [var.firewall_policy_insights]
+
     content {
       default_log_analytics_workspace_id = insights.value.default_log_analytics_workspace_id
       enabled                            = insights.value.enabled
@@ -44,6 +48,7 @@ resource "azurerm_firewall_policy" "this" {
 
       dynamic "log_analytics_workspace" {
         for_each = insights.value.log_analytics_workspace == null ? [] : insights.value.log_analytics_workspace
+
         content {
           firewall_location = log_analytics_workspace.value.firewall_location
           id                = log_analytics_workspace.value.id
@@ -53,12 +58,14 @@ resource "azurerm_firewall_policy" "this" {
   }
   dynamic "intrusion_detection" {
     for_each = var.firewall_policy_intrusion_detection == null ? [] : [var.firewall_policy_intrusion_detection]
+
     content {
       mode           = intrusion_detection.value.mode
       private_ranges = intrusion_detection.value.private_ranges
 
       dynamic "signature_overrides" {
         for_each = intrusion_detection.value.signature_overrides == null ? [] : intrusion_detection.value.signature_overrides
+
         content {
           id    = signature_overrides.value.id
           state = signature_overrides.value.state
@@ -66,6 +73,7 @@ resource "azurerm_firewall_policy" "this" {
       }
       dynamic "traffic_bypass" {
         for_each = intrusion_detection.value.traffic_bypass == null ? [] : intrusion_detection.value.traffic_bypass
+
         content {
           name                  = traffic_bypass.value.name
           protocol              = traffic_bypass.value.protocol
@@ -81,6 +89,7 @@ resource "azurerm_firewall_policy" "this" {
   }
   dynamic "threat_intelligence_allowlist" {
     for_each = var.firewall_policy_threat_intelligence_allowlist == null ? [] : [var.firewall_policy_threat_intelligence_allowlist]
+
     content {
       fqdns        = threat_intelligence_allowlist.value.fqdns
       ip_addresses = threat_intelligence_allowlist.value.ip_addresses
@@ -88,6 +97,7 @@ resource "azurerm_firewall_policy" "this" {
   }
   dynamic "timeouts" {
     for_each = var.firewall_policy_timeouts == null ? [] : [var.firewall_policy_timeouts]
+
     content {
       create = timeouts.value.create
       delete = timeouts.value.delete
@@ -97,6 +107,7 @@ resource "azurerm_firewall_policy" "this" {
   }
   dynamic "tls_certificate" {
     for_each = var.firewall_policy_tls_certificate == null ? [] : [var.firewall_policy_tls_certificate]
+
     content {
       key_vault_secret_id = tls_certificate.value.key_vault_secret_id
       name                = tls_certificate.value.name
@@ -132,18 +143,21 @@ resource "azurerm_monitor_diagnostic_setting" "this" {
 
   dynamic "enabled_log" {
     for_each = each.value.log_categories
+
     content {
       category = enabled_log.value
     }
   }
   dynamic "enabled_log" {
     for_each = each.value.log_groups
+
     content {
       category_group = enabled_log.value
     }
   }
   dynamic "metric" {
     for_each = each.value.metric_categories
+
     content {
       category = metric.value
     }
