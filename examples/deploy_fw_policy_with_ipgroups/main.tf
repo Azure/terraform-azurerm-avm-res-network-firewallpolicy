@@ -149,7 +149,7 @@ module "rule_collection_group" {
 module "rule_collection_group_2" {
   source                                                   = "../../modules/rule_collection_groups"
   firewall_policy_rule_collection_group_firewall_policy_id = module.firewall_policy.resource.id
-  firewall_policy_rule_collection_group_name               = "IPGroupRCG"
+  firewall_policy_rule_collection_group_name               = "IPGroupRCG2"
   firewall_policy_rule_collection_group_priority           = 500
   ip_groups = {
     module.ip_groups.ip_groups.ipgroup1.name = module.ip_groups.ip_groups.ipgroup1.id
