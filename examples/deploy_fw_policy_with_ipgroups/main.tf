@@ -145,3 +145,50 @@ module "rule_collection_group" {
     }
   ]
 }
+
+module "rule_collection_group_2" {
+  source                                                   = "../../modules/rule_collection_groups"
+  firewall_policy_rule_collection_group_firewall_policy_id = module.firewall_policy.resource.id
+  firewall_policy_rule_collection_group_name               = "IPGroupRCG"
+  firewall_policy_rule_collection_group_priority           = 500
+  ip_groups = {
+    module.ip_groups.ip_groups.ipgroup1.name = module.ip_groups.ip_groups.ipgroup1.id
+    module.ip_groups.ip_groups.ipgroup2.name = module.ip_groups.ip_groups.ipgroup2.id
+  }
+  firewall_policy_rule_collection_group_network_rule_collection = [
+    {
+      action   = "Allow"
+      name     = "NetworkRuleCollection2"
+      priority = 101
+      rule = [
+        {
+          name                  = "OutboundToIPGroups"
+          destination_ports     = ["443"]
+          destination_ip_groups = ["ipgroup1"]
+          source_ip_groups      = ["ipgroup2"]
+          protocols             = ["TCP"]
+        }
+      ]
+    }
+  ]
+  firewall_policy_rule_collection_group_application_rule_collection = [
+    {
+      action   = "Allow"
+      name     = "ApplicationRuleCollection"
+      priority = 201
+      rule = [
+        {
+          name              = "AllowMicrosoft"
+          destination_fqdns = ["*.microsoft.com"]
+          source_ip_groups  = ["ipgroup2"]
+          protocols = [
+            {
+              port = 443
+              type = "Https"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

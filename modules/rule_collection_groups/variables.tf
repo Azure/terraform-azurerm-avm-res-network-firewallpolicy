@@ -56,8 +56,8 @@ variable "firewall_policy_rule_collection_group_application_rule_collection" {
  - `destination_fqdns` - 
  - `destination_urls` - 
  - `name` - (Required) The name which should be used for this Firewall Policy Rule Collection Group. Changing this forces a new Firewall Policy Rule Collection Group to be created.
- - `source_addresses` - 
- - `source_ip_groups` - 
+ - `source_addresses` -
+ - `source_ip_groups` - (Optional) The ID or name of the source IP groups. If a name is used, it must be defined in `var.ip_groups` to map to its corresponding resource ID.
  - `terminate_tls` - 
  - `web_categories` - 
 
@@ -105,7 +105,7 @@ variable "firewall_policy_rule_collection_group_nat_rule_collection" {
  - `name` - (Required) The name which should be used for this Firewall Policy Rule Collection Group. Changing this forces a new Firewall Policy Rule Collection Group to be created.
  - `protocols` - 
  - `source_addresses` - 
- - `source_ip_groups` - 
+ - `source_ip_groups` - (Optional) The ID or name of the source IP groups. If a name is used, it must be defined in `var.ip_groups` to map to its corresponding resource ID.
  - `translated_address` - 
  - `translated_fqdn` - 
  - `translated_port` - 
@@ -140,12 +140,12 @@ variable "firewall_policy_rule_collection_group_network_rule_collection" {
  - `description` - 
  - `destination_addresses` - 
  - `destination_fqdns` - 
- - `destination_ip_groups` - 
+ - `destination_ip_groups` - (Optional) The ID or name of the destination IP groups. If a name is used, it must be defined in `var.ip_groups` to map to its corresponding resource ID.
  - `destination_ports` - 
  - `name` - (Required) The name which should be used for this Firewall Policy Rule Collection Group. Changing this forces a new Firewall Policy Rule Collection Group to be created.
  - `protocols` - 
  - `source_addresses` - 
- - `source_ip_groups` - 
+ - `source_ip_groups` - (Optional) The ID or name of the source IP groups. If a name is used, it must be defined in `var.ip_groups` to map to its corresponding resource ID.
 EOT
 }
 
@@ -163,4 +163,14 @@ variable "firewall_policy_rule_collection_group_timeouts" {
  - `read` - (Defaults to 5 minutes) Used when retrieving the Firewall Policy Rule Collection Group.
  - `update` - (Defaults to 30 minutes) Used when updating the Firewall Policy Rule Collection Group.
 EOT
+}
+
+variable "ip_groups" {
+  type        = map(string)
+  default     = {}
+  description = <<-EOT
+  (Optional) The ID or name of the source IP groups to be used in the rule. 
+  - If you provide the name of an IP group in the rules, it must be defined in `var.ip_groups` for mapping to its corresponding resource ID.
+  - If you provide the resource ID directly in the rules, no mapping is required.
+  EOT
 }
