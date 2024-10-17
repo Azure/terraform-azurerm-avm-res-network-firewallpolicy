@@ -169,8 +169,17 @@ variable "ip_groups" {
   type        = map(string)
   default     = {}
   description = <<-EOT
-  (Optional) The ID or name of the source IP groups to be used in the rule. 
-  - If you provide the name of an IP group in the rules, it must be defined in `var.ip_groups` for mapping to its corresponding resource ID.
-  - If you provide the resource ID directly in the rules, no mapping is required.
+  (Optional) A map of IP Group names to their corresponding resource IDs. This variable allows you to reference IP Groups by name in the firewall rules for easier management.
+  
+  - Key: The name of the IP Group (as used in the firewall rules).
+  - Value: The resource ID of the IP Group.
+  
+  If you provide the name of an IP Group in the firewall rules, it must be defined in `var.ip_groups` to map it to its resource ID. If you provide the resource ID directly in the rules, no mapping is required.
+
+  Example:
+  {
+    "ip-group-name-1" = "ip-group-1-resource-id",
+    "ip-group-name-2" = "ip-group-2-resource-id"
+  }
   EOT
 }
