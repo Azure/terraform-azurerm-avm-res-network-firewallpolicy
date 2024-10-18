@@ -21,6 +21,7 @@ resource "azurerm_firewall_policy_rule_collection_group" "this" {
 
   dynamic "application_rule_collection" {
     for_each = var.firewall_policy_rule_collection_group_application_rule_collection == null ? [] : var.firewall_policy_rule_collection_group_application_rule_collection
+
     content {
       action   = application_rule_collection.value.action
       name     = application_rule_collection.value.name
@@ -28,6 +29,7 @@ resource "azurerm_firewall_policy_rule_collection_group" "this" {
 
       dynamic "rule" {
         for_each = application_rule_collection.value.rule
+
         content {
           name                  = rule.value.name
           description           = rule.value.description
@@ -36,12 +38,13 @@ resource "azurerm_firewall_policy_rule_collection_group" "this" {
           destination_fqdns     = rule.value.destination_fqdns
           destination_urls      = rule.value.destination_urls
           source_addresses      = rule.value.source_addresses
-          source_ip_groups      = rule.value.source_ip_groups
+          source_ip_groups      = lookup(var.ip_groups, rule.value.source_ip_groups, rule.value.source_ip_groups)
           terminate_tls         = rule.value.terminate_tls
           web_categories        = rule.value.web_categories
 
           dynamic "http_headers" {
             for_each = rule.value.http_headers == null ? [] : rule.value.http_headers
+
             content {
               name  = http_headers.value.name
               value = http_headers.value.value
@@ -49,6 +52,7 @@ resource "azurerm_firewall_policy_rule_collection_group" "this" {
           }
           dynamic "protocols" {
             for_each = rule.value.protocols == null ? [] : rule.value.protocols
+
             content {
               port = protocols.value.port
               type = protocols.value.type
@@ -60,6 +64,7 @@ resource "azurerm_firewall_policy_rule_collection_group" "this" {
   }
   dynamic "nat_rule_collection" {
     for_each = var.firewall_policy_rule_collection_group_nat_rule_collection == null ? [] : var.firewall_policy_rule_collection_group_nat_rule_collection
+
     content {
       action   = nat_rule_collection.value.action
       name     = nat_rule_collection.value.name
@@ -67,6 +72,7 @@ resource "azurerm_firewall_policy_rule_collection_group" "this" {
 
       dynamic "rule" {
         for_each = nat_rule_collection.value.rule
+
         content {
           name                = rule.value.name
           protocols           = rule.value.protocols
@@ -74,7 +80,7 @@ resource "azurerm_firewall_policy_rule_collection_group" "this" {
           destination_address = rule.value.destination_address
           destination_ports   = rule.value.destination_ports
           source_addresses    = rule.value.source_addresses
-          source_ip_groups    = rule.value.source_ip_groups
+          source_ip_groups    = lookup(var.ip_groups, rule.value.source_ip_groups, rule.value.source_ip_groups)
           translated_address  = rule.value.translated_address
           translated_fqdn     = rule.value.translated_fqdn
         }
@@ -83,6 +89,7 @@ resource "azurerm_firewall_policy_rule_collection_group" "this" {
   }
   dynamic "network_rule_collection" {
     for_each = var.firewall_policy_rule_collection_group_network_rule_collection == null ? [] : var.firewall_policy_rule_collection_group_network_rule_collection
+
     content {
       action   = network_rule_collection.value.action
       name     = network_rule_collection.value.name
@@ -90,21 +97,23 @@ resource "azurerm_firewall_policy_rule_collection_group" "this" {
 
       dynamic "rule" {
         for_each = network_rule_collection.value.rule
+
         content {
           destination_ports     = rule.value.destination_ports
           name                  = rule.value.name
           protocols             = rule.value.protocols
           destination_addresses = rule.value.destination_addresses
           destination_fqdns     = rule.value.destination_fqdns
-          destination_ip_groups = rule.value.destination_ip_groups
+          destination_ip_groups = lookup(var.ip_groups, rule.value.destination_ip_groups, rule.value.destination_ip_groups)
           source_addresses      = rule.value.source_addresses
-          source_ip_groups      = rule.value.source_ip_groups
+          source_ip_groups      = lookup(var.ip_groups, rule.value.source_ip_groups, rule.value.source_ip_groups)
         }
       }
     }
   }
   dynamic "timeouts" {
     for_each = var.firewall_policy_rule_collection_group_timeouts == null ? [] : [var.firewall_policy_rule_collection_group_timeouts]
+
     content {
       create = timeouts.value.create
       delete = timeouts.value.delete
@@ -122,13 +131,13 @@ The following requirements are needed by this module:
 
 - <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.5)
 
-- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (~> 3.71)
+- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (>= 3.71, < 5.0.0)
 
 ## Providers
 
 The following providers are used by this module:
 
-- <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) (~> 3.71)
+- <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) (>= 3.71, < 5.0.0)
 
 ## Resources
 
@@ -178,7 +187,7 @@ Description: - `action` - (Required) The action to take for the application rule
 - `destination_urls` -
 - `name` - (Required) The name which should be used for this Firewall Policy Rule Collection Group. Changing this forces a new Firewall Policy Rule Collection Group to be created.
 - `source_addresses` -
-- `source_ip_groups` -
+- `source_ip_groups` - (Optional) The ID or name of the source IP groups. If a name is used, it must be defined in `var.ip_groups` to map to its corresponding resource ID.
 - `terminate_tls` -
 - `web_categories` -
 
@@ -238,7 +247,7 @@ Description: - `action` - (Required) The action to take for the NAT rules in thi
 - `name` - (Required) The name which should be used for this Firewall Policy Rule Collection Group. Changing this forces a new Firewall Policy Rule Collection Group to be created.
 - `protocols` -
 - `source_addresses` -
-- `source_ip_groups` -
+- `source_ip_groups` - (Optional) The ID or name of the source IP groups. If a name is used, it must be defined in `var.ip_groups` to map to its corresponding resource ID.
 - `translated_address` -
 - `translated_fqdn` -
 - `translated_port` -
@@ -278,12 +287,12 @@ Description: - `action` - (Required) The action to take for the network rules in
 - `description` -
 - `destination_addresses` -
 - `destination_fqdns` -
-- `destination_ip_groups` -
+- `destination_ip_groups` - (Optional) The ID or name of the destination IP groups. If a name is used, it must be defined in `var.ip_groups` to map to its corresponding resource ID.
 - `destination_ports` -
 - `name` - (Required) The name which should be used for this Firewall Policy Rule Collection Group. Changing this forces a new Firewall Policy Rule Collection Group to be created.
 - `protocols` -
 - `source_addresses` -
-- `source_ip_groups` -
+- `source_ip_groups` - (Optional) The ID or name of the source IP groups. If a name is used, it must be defined in `var.ip_groups` to map to its corresponding resource ID.
 
 Type:
 
@@ -327,6 +336,27 @@ object({
 ```
 
 Default: `null`
+
+### <a name="input_ip_groups"></a> [ip\_groups](#input\_ip\_groups)
+
+Description: (Optional) A map of IP Group names to their corresponding resource IDs. This variable allows you to reference IP Groups by name in the firewall rules for easier management.
+
+- Key: The name of the IP Group (as used in the firewall rules).
+- Value: The resource ID of the IP Group.  
+
+If you provide the name of an IP Group in the firewall rules, it must be defined in `var.ip_groups` to map it to its resource ID. If you provide the resource ID directly in the rules, no mapping is required.
+
+Example:
+```
+{
+  "ip-group-1-name" = "ip-group-1-resource-id",
+  "ip-group-2-name" = "ip-group-2-resource-id"
+}
+```
+
+Type: `map(string)`
+
+Default: `{}`
 
 ## Outputs
 
