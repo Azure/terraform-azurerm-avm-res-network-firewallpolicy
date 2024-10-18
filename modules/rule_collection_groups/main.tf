@@ -22,7 +22,7 @@ resource "azurerm_firewall_policy_rule_collection_group" "this" {
           destination_fqdns     = rule.value.destination_fqdns
           destination_urls      = rule.value.destination_urls
           source_addresses      = rule.value.source_addresses
-          source_ip_groups      = rule.value.source_ip_groups
+          source_ip_groups      = lookup(var.ip_groups, rule.value.source_ip_groups, rule.value.source_ip_groups)
           terminate_tls         = rule.value.terminate_tls
           web_categories        = rule.value.web_categories
 
@@ -64,7 +64,7 @@ resource "azurerm_firewall_policy_rule_collection_group" "this" {
           destination_address = rule.value.destination_address
           destination_ports   = rule.value.destination_ports
           source_addresses    = rule.value.source_addresses
-          source_ip_groups    = rule.value.source_ip_groups
+          source_ip_groups    = lookup(var.ip_groups, rule.value.source_ip_groups, rule.value.source_ip_groups)
           translated_address  = rule.value.translated_address
           translated_fqdn     = rule.value.translated_fqdn
         }
@@ -88,9 +88,9 @@ resource "azurerm_firewall_policy_rule_collection_group" "this" {
           protocols             = rule.value.protocols
           destination_addresses = rule.value.destination_addresses
           destination_fqdns     = rule.value.destination_fqdns
-          destination_ip_groups = rule.value.destination_ip_groups
+          destination_ip_groups = lookup(var.ip_groups, rule.value.destination_ip_groups, rule.value.destination_ip_groups)
           source_addresses      = rule.value.source_addresses
-          source_ip_groups      = rule.value.source_ip_groups
+          source_ip_groups      = lookup(var.ip_groups, rule.value.source_ip_groups, rule.value.source_ip_groups)
         }
       }
     }
