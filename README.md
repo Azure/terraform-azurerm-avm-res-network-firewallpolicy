@@ -1,5 +1,5 @@
 <!-- BEGIN_TF_DOCS -->
-# terraform-azurerm-avm-network=firewallpolicy
+# terraform-azurerm-avm-network-firewallpolicy
 
 This is the module to create an Azure Firewall Policy
 
