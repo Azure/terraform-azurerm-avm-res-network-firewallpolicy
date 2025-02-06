@@ -21,6 +21,7 @@ resource "azurerm_firewall_policy_rule_collection_group" "this" {
 
   dynamic "application_rule_collection" {
     for_each = var.firewall_policy_rule_collection_group_application_rule_collection == null ? [] : var.firewall_policy_rule_collection_group_application_rule_collection
+
     content {
       action   = application_rule_collection.value.action
       name     = application_rule_collection.value.name
@@ -28,6 +29,7 @@ resource "azurerm_firewall_policy_rule_collection_group" "this" {
 
       dynamic "rule" {
         for_each = application_rule_collection.value.rule
+
         content {
           name                  = rule.value.name
           description           = rule.value.description
@@ -42,6 +44,7 @@ resource "azurerm_firewall_policy_rule_collection_group" "this" {
 
           dynamic "http_headers" {
             for_each = rule.value.http_headers == null ? [] : rule.value.http_headers
+
             content {
               name  = http_headers.value.name
               value = http_headers.value.value
@@ -49,6 +52,7 @@ resource "azurerm_firewall_policy_rule_collection_group" "this" {
           }
           dynamic "protocols" {
             for_each = rule.value.protocols == null ? [] : rule.value.protocols
+
             content {
               port = protocols.value.port
               type = protocols.value.type
@@ -60,6 +64,7 @@ resource "azurerm_firewall_policy_rule_collection_group" "this" {
   }
   dynamic "nat_rule_collection" {
     for_each = var.firewall_policy_rule_collection_group_nat_rule_collection == null ? [] : var.firewall_policy_rule_collection_group_nat_rule_collection
+
     content {
       action   = nat_rule_collection.value.action
       name     = nat_rule_collection.value.name
@@ -67,6 +72,7 @@ resource "azurerm_firewall_policy_rule_collection_group" "this" {
 
       dynamic "rule" {
         for_each = nat_rule_collection.value.rule
+
         content {
           name                = rule.value.name
           protocols           = rule.value.protocols
@@ -83,6 +89,7 @@ resource "azurerm_firewall_policy_rule_collection_group" "this" {
   }
   dynamic "network_rule_collection" {
     for_each = var.firewall_policy_rule_collection_group_network_rule_collection == null ? [] : var.firewall_policy_rule_collection_group_network_rule_collection
+
     content {
       action   = network_rule_collection.value.action
       name     = network_rule_collection.value.name
@@ -90,6 +97,7 @@ resource "azurerm_firewall_policy_rule_collection_group" "this" {
 
       dynamic "rule" {
         for_each = network_rule_collection.value.rule
+
         content {
           destination_ports     = rule.value.destination_ports
           name                  = rule.value.name
@@ -105,6 +113,7 @@ resource "azurerm_firewall_policy_rule_collection_group" "this" {
   }
   dynamic "timeouts" {
     for_each = var.firewall_policy_rule_collection_group_timeouts == null ? [] : [var.firewall_policy_rule_collection_group_timeouts]
+
     content {
       create = timeouts.value.create
       delete = timeouts.value.delete
@@ -122,13 +131,13 @@ The following requirements are needed by this module:
 
 - <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.5)
 
-- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (~> 3.71)
+- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (>= 3.71, < 5.0.0)
 
 ## Providers
 
 The following providers are used by this module:
 
-- <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) (~> 3.71)
+- <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) (>= 3.71, < 5.0.0)
 
 ## Resources
 
@@ -201,15 +210,15 @@ list(object({
     priority = number
     rule = list(object({
       description           = optional(string)
-      destination_addresses = optional(list(string))
-      destination_fqdn_tags = optional(list(string))
-      destination_fqdns     = optional(list(string))
-      destination_urls      = optional(list(string))
+      destination_addresses = optional(list(string), [])
+      destination_fqdn_tags = optional(list(string), [])
+      destination_fqdns     = optional(list(string), [])
+      destination_urls      = optional(list(string), [])
       name                  = string
-      source_addresses      = optional(list(string))
-      source_ip_groups      = optional(list(string))
+      source_addresses      = optional(list(string), [])
+      source_ip_groups      = optional(list(string), [])
       terminate_tls         = optional(bool)
-      web_categories        = optional(list(string))
+      web_categories        = optional(list(string), [])
       http_headers = optional(list(object({
         name  = string
         value = string
@@ -253,11 +262,11 @@ list(object({
     rule = list(object({
       description         = optional(string)
       destination_address = optional(string)
-      destination_ports   = optional(list(string))
+      destination_ports   = optional(list(string), [])
       name                = string
       protocols           = list(string)
-      source_addresses    = optional(list(string))
-      source_ip_groups    = optional(list(string))
+      source_addresses    = optional(list(string), [])
+      source_ip_groups    = optional(list(string), [])
       translated_address  = optional(string)
       translated_fqdn     = optional(string)
       translated_port     = number
@@ -294,14 +303,14 @@ list(object({
     priority = number
     rule = list(object({
       description           = optional(string)
-      destination_addresses = optional(list(string))
-      destination_fqdns     = optional(list(string))
-      destination_ip_groups = optional(list(string))
+      destination_addresses = optional(list(string), [])
+      destination_fqdns     = optional(list(string), [])
+      destination_ip_groups = optional(list(string), [])
       destination_ports     = list(string)
       name                  = string
       protocols             = list(string)
-      source_addresses      = optional(list(string))
-      source_ip_groups      = optional(list(string))
+      source_addresses      = optional(list(string), [])
+      source_ip_groups      = optional(list(string), [])
     }))
   }))
 ```
