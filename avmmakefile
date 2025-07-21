@@ -5,6 +5,10 @@ AVM_PORCH_REF := main
 help:
 	@echo "please use 'make <target>'"
 
+.PHONY: migrate
+migrate:
+	@echo "This is a no-op. This repo has already been migrated."
+
 .PHONY: pre-commit
 pre-commit:
 	@echo "Running pre-commit..."
