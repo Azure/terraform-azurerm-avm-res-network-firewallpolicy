@@ -1,5 +1,6 @@
 terraform {
   required_version = ">= 1.3.0"
+
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
@@ -37,11 +38,12 @@ resource "azurerm_resource_group" "this" {
 # This is the module call
 module "firewall_policy" {
   source = "../.."
-  # source             = "Azure/avm-res-network-firewallpolicy/azurerm"
-  enable_telemetry    = var.enable_telemetry
-  name                = module.naming.firewall_policy.name_unique
+
   location            = azurerm_resource_group.this.location
+  name                = module.naming.firewall_policy.name_unique
   resource_group_name = azurerm_resource_group.this.name
+  # source             = "Azure/avm-res-network-firewallpolicy/azurerm"
+  enable_telemetry = var.enable_telemetry
   firewall_policy_dns = {
     proxy_enabled = true
   }
@@ -49,6 +51,7 @@ module "firewall_policy" {
 
 module "avd_core_rule_collection_group" {
   source = "../../modules/rule_collection_groups"
+
   # source             = "Azure/avm-res-network-firewallpolicy/azurerm//modules/rule_collection_groups"
   firewall_policy_rule_collection_group_firewall_policy_id = module.firewall_policy.resource.id
   firewall_policy_rule_collection_group_name               = "NetworkRuleCollectionGroup"
@@ -136,40 +139,11 @@ module "avd_core_rule_collection_group" {
 
 module "avd_optional_rule_collection_group" {
   source = "../../modules/rule_collection_groups"
+
   # source             = "Azure/avm-res-network-firewallpolicy/azurerm//modules/rule_collection_groups"
   firewall_policy_rule_collection_group_firewall_policy_id = module.firewall_policy.resource.id
   firewall_policy_rule_collection_group_name               = "AVDOptionalRuleCollectionGroup"
   firewall_policy_rule_collection_group_priority           = 1050
-  firewall_policy_rule_collection_group_network_rule_collection = [{
-    action   = "Allow"
-    name     = "AVDOptionalNetworkRules"
-    priority = 500
-    rule = [
-      {
-        name              = "time"
-        source_addresses  = ["10.0.0.0/24"]
-        destination_fqdns = ["time.windows.com"]
-        protocols         = ["UDP"]
-        destination_ports = ["123"]
-      },
-      {
-        name              = "login windows.net"
-        source_addresses  = ["10.0.0.0/24"]
-        destination_fqdns = ["login.windows.net"]
-        protocols         = ["TCP"]
-        destination_ports = ["443"]
-      },
-      {
-        name              = "msftconnecttest"
-        source_addresses  = ["10.0.0.0/24"]
-        destination_fqdns = ["www.msftconnecttest.com"]
-        protocols         = ["TCP"]
-        destination_ports = ["443"]
-      },
-    ]
-    }
-  ]
-
   firewall_policy_rule_collection_group_application_rule_collection = [{
     action   = "Allow"
     name     = "AVDOptionalApplicationRules"
@@ -233,10 +207,40 @@ module "avd_optional_rule_collection_group" {
     ]
     }
   ]
+  firewall_policy_rule_collection_group_network_rule_collection = [{
+    action   = "Allow"
+    name     = "AVDOptionalNetworkRules"
+    priority = 500
+    rule = [
+      {
+        name              = "time"
+        source_addresses  = ["10.0.0.0/24"]
+        destination_fqdns = ["time.windows.com"]
+        protocols         = ["UDP"]
+        destination_ports = ["123"]
+      },
+      {
+        name              = "login windows.net"
+        source_addresses  = ["10.0.0.0/24"]
+        destination_fqdns = ["login.windows.net"]
+        protocols         = ["TCP"]
+        destination_ports = ["443"]
+      },
+      {
+        name              = "msftconnecttest"
+        source_addresses  = ["10.0.0.0/24"]
+        destination_fqdns = ["www.msftconnecttest.com"]
+        protocols         = ["TCP"]
+        destination_ports = ["443"]
+      },
+    ]
+    }
+  ]
 }
 
 module "m365rulecollectiongroup" {
   source = "../../modules/rule_collection_groups"
+
   # source             = "Azure/avm-res-network-firewallpolicy/azurerm//modules/rule_collection_groups"
   firewall_policy_rule_collection_group_firewall_policy_id = module.firewall_policy.resource.id
   firewall_policy_rule_collection_group_name               = "M365RuleCollectionGroup"
@@ -260,6 +264,7 @@ module "m365rulecollectiongroup" {
 
 module "internetrulecollectiongroup" {
   source = "../../modules/rule_collection_groups"
+
   # source             = "Azure/avm-res-network-firewallpolicy/azurerm//modules/rule_collection_groups"
   firewall_policy_rule_collection_group_firewall_policy_id = module.firewall_policy.resource.id
   firewall_policy_rule_collection_group_name               = "InternetRuleCollectionGroup"

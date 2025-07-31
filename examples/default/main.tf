@@ -1,5 +1,6 @@
 terraform {
   required_version = ">= 1.3.0"
+
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
@@ -37,9 +38,10 @@ resource "azurerm_resource_group" "this" {
 # This is the module call
 module "firewall_policy" {
   source = "../.."
-  # source             = "Azure/avm-res-network-firewallpolicy/azurerm"
-  enable_telemetry    = var.enable_telemetry
-  name                = module.naming.firewall_policy.name_unique
+
   location            = azurerm_resource_group.this.location
+  name                = module.naming.firewall_policy.name_unique
   resource_group_name = azurerm_resource_group.this.name
+  # source             = "Azure/avm-res-network-firewallpolicy/azurerm"
+  enable_telemetry = var.enable_telemetry
 }
