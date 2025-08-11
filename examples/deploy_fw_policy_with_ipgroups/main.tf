@@ -1,5 +1,6 @@
 terraform {
   required_version = ">= 1.3.0"
+
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
@@ -35,13 +36,14 @@ resource "azurerm_resource_group" "rg" {
 }
 
 module "vnet" {
-  source              = "Azure/avm-res-network-virtualnetwork/azurerm"
-  version             = "0.2.0"
-  enable_telemetry    = var.enable_telemetry
+  source  = "Azure/avm-res-network-virtualnetwork/azurerm"
+  version = "0.2.0"
+
+  address_space       = ["10.1.0.0/16"]
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
+  enable_telemetry    = var.enable_telemetry
   name                = module.naming.virtual_network.name_unique
-  address_space       = ["10.1.0.0/16"]
 }
 
 resource "azurerm_subnet" "subnet" {
@@ -76,15 +78,15 @@ resource "azurerm_ip_group" "ipgroup_2" {
 
 # This is the module call
 module "firewall" {
-  source              = "Azure/avm-res-network-azurefirewall/azurerm"
-  version             = "0.2.0"
-  name                = module.naming.firewall.name
-  enable_telemetry    = var.enable_telemetry
-  location            = azurerm_resource_group.rg.location
-  resource_group_name = azurerm_resource_group.rg.name
-  firewall_sku_tier   = "Standard"
+  source  = "Azure/avm-res-network-azurefirewall/azurerm"
+  version = "0.2.0"
+
   firewall_sku_name   = "AZFW_VNet"
-  firewall_zones      = ["1", "2", "3"]
+  firewall_sku_tier   = "Standard"
+  location            = azurerm_resource_group.rg.location
+  name                = module.naming.firewall.name
+  resource_group_name = azurerm_resource_group.rg.name
+  enable_telemetry    = var.enable_telemetry
   firewall_ip_configuration = [
     {
       name                 = "ipconfig1"
@@ -93,37 +95,24 @@ module "firewall" {
     }
   ]
   firewall_policy_id = module.firewall_policy.resource.id
+  firewall_zones     = ["1", "2", "3"]
 }
 
 module "firewall_policy" {
-  source              = "../.."
-  enable_telemetry    = var.enable_telemetry
+  source = "../.."
+
   location            = azurerm_resource_group.rg.location
-  resource_group_name = azurerm_resource_group.rg.name
   name                = module.naming.firewall_policy.name
+  resource_group_name = azurerm_resource_group.rg.name
+  enable_telemetry    = var.enable_telemetry
 }
 
 module "rule_collection_group" {
-  source                                                   = "../../modules/rule_collection_groups"
+  source = "../../modules/rule_collection_groups"
+
   firewall_policy_rule_collection_group_firewall_policy_id = module.firewall_policy.resource.id
   firewall_policy_rule_collection_group_name               = "IPGroupRCG"
   firewall_policy_rule_collection_group_priority           = 400
-  firewall_policy_rule_collection_group_network_rule_collection = [
-    {
-      action   = "Allow"
-      name     = "NetworkRuleCollection"
-      priority = 101
-      rule = [
-        {
-          name                  = "OutboundToIPGroups"
-          destination_ports     = ["443"]
-          destination_ip_groups = [azurerm_ip_group.ipgroup_1.id]
-          source_ip_groups      = [azurerm_ip_group.ipgroup_2.id]
-          protocols             = ["TCP"]
-        }
-      ]
-    }
-  ]
   firewall_policy_rule_collection_group_application_rule_collection = [
     {
       action   = "Allow"
@@ -140,6 +129,22 @@ module "rule_collection_group" {
               type = "Https"
             }
           ]
+        }
+      ]
+    }
+  ]
+  firewall_policy_rule_collection_group_network_rule_collection = [
+    {
+      action   = "Allow"
+      name     = "NetworkRuleCollection"
+      priority = 101
+      rule = [
+        {
+          name                  = "OutboundToIPGroups"
+          destination_ports     = ["443"]
+          destination_ip_groups = [azurerm_ip_group.ipgroup_1.id]
+          source_ip_groups      = [azurerm_ip_group.ipgroup_2.id]
+          protocols             = ["TCP"]
         }
       ]
     }
