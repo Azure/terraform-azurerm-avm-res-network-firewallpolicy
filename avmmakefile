@@ -4,6 +4,20 @@ AVM_PORCH_REF := main
 .PHONY: help
 help:
 	@echo "please use 'make <target>'"
+	@echo "available targets are:"
+	@echo "  help"
+	@echo "  migrate (a no-op, this repo has already been migrated)"
+	@echo "  pre-commit (runs doc generation and repo file sync)"
+	@echo "  pr-check (checks that pre-commit has been run and runs linters)"
+	@echo "  test-examples (tests all examples - set `AVM_EXAMPLE` to the specific example name to only test one)"
+	@echo "  tf-test-unit (runs unit tests in `tests/unit`)"
+	@echo "  tf-test-integration (runs integration tests in `tests/integration`)"
+	@echo "  globalsetup (runs global setup tasks, only if you have a `examples/setup.sh`)"
+	@echo "  globalteardown (runs global teardown tasks, only if you have a `examples/teardown.sh`)"
+
+.PHONY: migrate
+migrate:
+	@echo "This is a no-op. This repo has already been migrated."
 
 .PHONY: pre-commit
 pre-commit:
