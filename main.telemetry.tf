@@ -19,10 +19,8 @@ resource "modtm_telemetry" "telemetry" {
     module_version  = one(data.modtm_module_source.telemetry).module_version
     random_id       = one(random_uuid.telemetry).result
   }, { location = local.main_location })
-
 }
 data "azapi_client_config" "telemetry" {
-
   count = var.enable_telemetry ? 1 : 0
 }
 
@@ -33,7 +31,6 @@ locals {
     "git::https://github\\.com/[A|a]zure/.+",
     "git::ssh:://git@github\\.com/[A|a]zure/.+",
   ]
-
 }
 
 locals {
@@ -46,7 +43,6 @@ locals {
     avm_module_source  = one(data.modtm_module_source.telemetry).module_source
     avm_module_version = one(data.modtm_module_source.telemetry).module_version
   })
-
 }
 
 locals {
@@ -56,7 +52,6 @@ locals {
 locals {
   # tflint-ignore: terraform_unused_declarations
   avm_azapi_header = join(" ", [for k, v in local.avm_azapi_headers : "${k}=${v}"])
-
 }
 locals {
   main_location = var.location
