@@ -37,13 +37,13 @@ resource "azurerm_resource_group" "rg" {
 
 module "vnet" {
   source  = "Azure/avm-res-network-virtualnetwork/azurerm"
-  version = "0.2.0"
+  version = "0.16.0"
 
-  address_space       = ["10.1.0.0/16"]
   location            = azurerm_resource_group.rg.location
-  resource_group_name = azurerm_resource_group.rg.name
+  address_space       = ["10.1.0.0/16"]
   enable_telemetry    = var.enable_telemetry
   name                = module.naming.virtual_network.name_unique
+  resource_group_name = azurerm_resource_group.rg.name
 }
 
 resource "azurerm_subnet" "subnet" {
@@ -79,7 +79,7 @@ resource "azurerm_ip_group" "ipgroup_2" {
 # This is the module call
 module "firewall" {
   source  = "Azure/avm-res-network-azurefirewall/azurerm"
-  version = "0.2.0"
+  version = "0.4.0"
 
   firewall_sku_name   = "AZFW_VNet"
   firewall_sku_tier   = "Standard"
