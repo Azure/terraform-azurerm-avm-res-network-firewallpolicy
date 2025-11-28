@@ -53,11 +53,11 @@ module "vnet" {
   source  = "Azure/avm-res-network-virtualnetwork/azurerm"
   version = "0.16.0"
 
-  location            = azurerm_resource_group.rg.location
-  address_space       = ["10.1.0.0/16"]
-  enable_telemetry    = var.enable_telemetry
-  name                = module.naming.virtual_network.name_unique
-  resource_group_name = azurerm_resource_group.rg.name
+  location         = azurerm_resource_group.rg.location
+  parent_id        = azurerm_resource_group.rg.id
+  address_space    = ["10.1.0.0/16"]
+  enable_telemetry = var.enable_telemetry
+  name             = module.naming.virtual_network.name_unique
 }
 
 resource "azurerm_subnet" "subnet" {
