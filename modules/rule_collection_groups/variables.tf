@@ -71,6 +71,13 @@ variable "firewall_policy_rule_collection_group_application_rule_collection" {
 - `port` - (Required) Port number of the protocol. Range is 0-64000.
 - `type` - (Required) Protocol type. Possible values are `Http` and `Https`.
 EOT
+  validation {
+    condition = var.firewall_policy_rule_collection_group_application_rule_collection == null || alltrue([
+      for collection in var.firewall_policy_rule_collection_group_application_rule_collection :
+      length(collection.rule) == length(distinct([for rule in collection.rule : rule.name]))
+    ])
+    error_message = "Application rule collection rule names must be unique within each collection."
+  }
 }
 
 variable "firewall_policy_rule_collection_group_nat_rule_collection" {
@@ -110,6 +117,13 @@ variable "firewall_policy_rule_collection_group_nat_rule_collection" {
 - `translated_fqdn` -
 - `translated_port` -
 EOT
+  validation {
+    condition = var.firewall_policy_rule_collection_group_nat_rule_collection == null || alltrue([
+      for collection in var.firewall_policy_rule_collection_group_nat_rule_collection :
+      length(collection.rule) == length(distinct([for rule in collection.rule : rule.name]))
+    ])
+    error_message = "NAT rule collection rule names must be unique within each collection."
+  }
 }
 
 variable "firewall_policy_rule_collection_group_network_rule_collection" {
@@ -147,6 +161,13 @@ variable "firewall_policy_rule_collection_group_network_rule_collection" {
 - `source_addresses` -
 - `source_ip_groups` -
 EOT
+  validation {
+    condition = var.firewall_policy_rule_collection_group_network_rule_collection == null || alltrue([
+      for collection in var.firewall_policy_rule_collection_group_network_rule_collection :
+      length(collection.rule) == length(distinct([for rule in collection.rule : rule.name]))
+    ])
+    error_message = "Network rule collection rule names must be unique within each collection."
+  }
 }
 
 variable "firewall_policy_rule_collection_group_timeouts" {
