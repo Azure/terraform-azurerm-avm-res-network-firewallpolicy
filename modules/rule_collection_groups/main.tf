@@ -12,7 +12,7 @@ resource "azurerm_firewall_policy_rule_collection_group" "this" {
       priority = application_rule_collection.value.priority
 
       dynamic "rule" {
-        for_each = application_rule_collection.value.rule
+        for_each = { for rule in application_rule_collection.value.rule : rule.name => rule }
 
         content {
           name                  = rule.value.name
@@ -55,7 +55,7 @@ resource "azurerm_firewall_policy_rule_collection_group" "this" {
       priority = nat_rule_collection.value.priority
 
       dynamic "rule" {
-        for_each = nat_rule_collection.value.rule
+        for_each = { for rule in nat_rule_collection.value.rule : rule.name => rule }
 
         content {
           name                = rule.value.name
@@ -80,7 +80,7 @@ resource "azurerm_firewall_policy_rule_collection_group" "this" {
       priority = network_rule_collection.value.priority
 
       dynamic "rule" {
-        for_each = network_rule_collection.value.rule
+        for_each = { for rule in network_rule_collection.value.rule : rule.name => rule }
 
         content {
           destination_ports     = rule.value.destination_ports
