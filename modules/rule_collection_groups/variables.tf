@@ -71,6 +71,7 @@ variable "firewall_policy_rule_collection_group_application_rule_collection" {
 - `port` - (Required) Port number of the protocol. Range is 0-64000.
 - `type` - (Required) Protocol type. Possible values are `Http` and `Https`.
 EOT
+
   validation {
     condition = var.firewall_policy_rule_collection_group_application_rule_collection == null || alltrue([
       for collection in var.firewall_policy_rule_collection_group_application_rule_collection :
@@ -117,6 +118,7 @@ variable "firewall_policy_rule_collection_group_nat_rule_collection" {
 - `translated_fqdn` -
 - `translated_port` -
 EOT
+
   validation {
     condition = var.firewall_policy_rule_collection_group_nat_rule_collection == null || alltrue([
       for collection in var.firewall_policy_rule_collection_group_nat_rule_collection :
@@ -161,6 +163,7 @@ variable "firewall_policy_rule_collection_group_network_rule_collection" {
 - `source_addresses` -
 - `source_ip_groups` -
 EOT
+
   validation {
     condition = var.firewall_policy_rule_collection_group_network_rule_collection == null || alltrue([
       for collection in var.firewall_policy_rule_collection_group_network_rule_collection :
