@@ -18,6 +18,7 @@ resource "azurerm_firewall_policy" "this" {
       servers       = dns.value.servers
     }
   }
+
   dynamic "explicit_proxy" {
     for_each = var.firewall_policy_explicit_proxy == null ? [] : [var.firewall_policy_explicit_proxy]
 
@@ -30,6 +31,7 @@ resource "azurerm_firewall_policy" "this" {
       pac_file_port   = explicit_proxy.value.pac_file_port
     }
   }
+
   dynamic "identity" {
     for_each = var.firewall_policy_identity == null ? [] : [var.firewall_policy_identity]
 
@@ -38,6 +40,7 @@ resource "azurerm_firewall_policy" "this" {
       identity_ids = identity.value.identity_ids
     }
   }
+
   dynamic "insights" {
     for_each = var.firewall_policy_insights == null ? [] : [var.firewall_policy_insights]
 
@@ -56,6 +59,7 @@ resource "azurerm_firewall_policy" "this" {
       }
     }
   }
+
   dynamic "intrusion_detection" {
     for_each = var.firewall_policy_intrusion_detection == null ? [] : [var.firewall_policy_intrusion_detection]
 
@@ -87,6 +91,7 @@ resource "azurerm_firewall_policy" "this" {
       }
     }
   }
+
   dynamic "threat_intelligence_allowlist" {
     for_each = var.firewall_policy_threat_intelligence_allowlist == null ? [] : [var.firewall_policy_threat_intelligence_allowlist]
 
@@ -95,6 +100,7 @@ resource "azurerm_firewall_policy" "this" {
       ip_addresses = threat_intelligence_allowlist.value.ip_addresses
     }
   }
+
   dynamic "timeouts" {
     for_each = var.firewall_policy_timeouts == null ? [] : [var.firewall_policy_timeouts]
 
@@ -105,6 +111,7 @@ resource "azurerm_firewall_policy" "this" {
       update = timeouts.value.update
     }
   }
+
   dynamic "tls_certificate" {
     for_each = var.firewall_policy_tls_certificate == null ? [] : [var.firewall_policy_tls_certificate]
 
@@ -155,6 +162,7 @@ resource "azurerm_monitor_diagnostic_setting" "this" {
       category_group = enabled_log.value
     }
   }
+
   dynamic "metric" {
     for_each = each.value.metric_categories
 
