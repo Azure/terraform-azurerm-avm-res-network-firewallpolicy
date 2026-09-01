@@ -4,7 +4,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = ">= 3.71, < 5.0.0"
+      version = ">= 3.71, < 5.0.2"
     }
     random = {
       source  = "hashicorp/random"
@@ -26,7 +26,7 @@ resource "random_integer" "region_index" {
 # This ensures we have unique CAF compliant names for our resources.
 module "naming" {
   source  = "Azure/naming/azurerm"
-  version = "0.3.0"
+  version = "0.4.3"
 }
 
 # This is required for resource modules
