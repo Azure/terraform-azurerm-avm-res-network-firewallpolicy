@@ -1,4 +1,3 @@
-
 locals {
   azure_regions = [
     "westeurope",
