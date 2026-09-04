@@ -46,6 +46,7 @@ resource "azurerm_firewall_policy_rule_collection_group" "this" {
       }
     }
   }
+
   dynamic "nat_rule_collection" {
     for_each = var.firewall_policy_rule_collection_group_nat_rule_collection == null ? [] : var.firewall_policy_rule_collection_group_nat_rule_collection
 
@@ -71,6 +72,7 @@ resource "azurerm_firewall_policy_rule_collection_group" "this" {
       }
     }
   }
+
   dynamic "network_rule_collection" {
     for_each = var.firewall_policy_rule_collection_group_network_rule_collection == null ? [] : var.firewall_policy_rule_collection_group_network_rule_collection
 
@@ -95,6 +97,7 @@ resource "azurerm_firewall_policy_rule_collection_group" "this" {
       }
     }
   }
+
   dynamic "timeouts" {
     for_each = var.firewall_policy_rule_collection_group_timeouts == null ? [] : [var.firewall_policy_rule_collection_group_timeouts]
 

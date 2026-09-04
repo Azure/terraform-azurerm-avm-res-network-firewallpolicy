@@ -136,7 +136,6 @@ module "avd_core_rule_collection_group" {
   ]
 }
 
-
 module "avd_optional_rule_collection_group" {
   source = "../../modules/rule_collection_groups"
 

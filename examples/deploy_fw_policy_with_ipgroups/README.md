@@ -61,10 +61,10 @@ module "vnet" {
 }
 
 resource "azurerm_subnet" "subnet" {
-  address_prefixes     = ["10.1.0.0/26"]
   name                 = "AzureFirewallSubnet"
   resource_group_name  = azurerm_resource_group.rg.name
   virtual_network_name = module.vnet.resource.name
+  address_prefixes     = ["10.1.0.0/26"]
 }
 
 resource "azurerm_public_ip" "pip" {
