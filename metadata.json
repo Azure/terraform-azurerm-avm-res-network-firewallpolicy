@@ -1,0 +1,10 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Azure/azure-verified-modules-tools/main/src/Avm.Authoring/Resources/Schemas/v1/avm-module-metadata.schema.json",
+  "moduleDisplayName": "Azure Firewall Policy",
+  "moduleDescription": "AVM Resource Module for Azure Firewall Policy",
+  "canonicalType": "Microsoft.Network/firewallPolicies",
+  "owners": [
+    "MinHeinA"
+  ],
+  "telemetryIdPrefix": "46d3xtrf.res.23b9d74"
+}

@@ -1,0 +1,7 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Azure/azure-verified-modules-tools/main/src/Avm.Authoring/Resources/Schemas/v1/avm-module-metadata.schema.json",
+  "moduleDisplayName": "Azure Firewall Policy Rule Collection Group",
+  "moduleDescription": "This is the sub-module to create Rule Collection Groups in Azure Firewall Policy",
+  "canonicalType": "Microsoft.Network/firewallPolicies/ruleCollectionGroups",
+  "telemetryIdPrefix": "46d3xtrf.res.e081755"
+}
