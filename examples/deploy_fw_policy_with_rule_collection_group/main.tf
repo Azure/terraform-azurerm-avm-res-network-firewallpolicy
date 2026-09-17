@@ -43,7 +43,7 @@ module "firewall_policy" {
   name                = module.naming.firewall_policy.name_unique
   resource_group_name = azurerm_resource_group.this.name
   # source             = "Azure/avm-res-network-firewallpolicy/azurerm"
-  enable_telemetry = var.enable_telemetry
+  enable_telemetry = false
 }
 
 module "rule_collection_group" {
