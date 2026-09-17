@@ -56,7 +56,7 @@ module "vnet" {
   location         = azurerm_resource_group.rg.location
   parent_id        = azurerm_resource_group.rg.id
   address_space    = ["10.1.0.0/16"]
-  enable_telemetry = var.enable_telemetry
+  enable_telemetry = false
   name             = module.naming.virtual_network.name_unique
 }
 
@@ -100,7 +100,7 @@ module "firewall" {
   location            = azurerm_resource_group.rg.location
   name                = module.naming.firewall.name
   resource_group_name = azurerm_resource_group.rg.name
-  enable_telemetry    = var.enable_telemetry
+  enable_telemetry    = false
   firewall_ip_configuration = [
     {
       name                 = "ipconfig1"
@@ -118,7 +118,7 @@ module "firewall_policy" {
   location            = azurerm_resource_group.rg.location
   name                = module.naming.firewall_policy.name
   resource_group_name = azurerm_resource_group.rg.name
-  enable_telemetry    = var.enable_telemetry
+  enable_telemetry    = false
 }
 
 module "rule_collection_group" {
