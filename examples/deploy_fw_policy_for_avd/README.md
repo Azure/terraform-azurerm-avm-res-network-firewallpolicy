@@ -55,7 +55,7 @@ module "firewall_policy" {
   name                = module.naming.firewall_policy.name_unique
   resource_group_name = azurerm_resource_group.this.name
   # source             = "Azure/avm-res-network-firewallpolicy/azurerm"
-  enable_telemetry = false
+  enable_telemetry = var.enable_telemetry
   firewall_policy_dns = {
     proxy_enabled = true
   }
@@ -333,7 +333,7 @@ If it is set to false, then no telemetry will be collected.
 
 Type: `bool`
 
-Default: `true`
+Default: `false`
 
 ## Outputs
 
