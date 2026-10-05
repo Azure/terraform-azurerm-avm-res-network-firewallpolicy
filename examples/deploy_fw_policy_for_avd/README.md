@@ -11,12 +11,14 @@ This example deploys an Azure Firewall Policy with the required rules needed for
 
 ```hcl
 terraform {
-  required_version = ">= 1.3.0"
+  # Raised from `>= 1.3.0` by the AzAPI migration to match the module under
+  # test, which needs `>= 1.9`.
+  required_version = ">= 1.9, < 2.0"
 
   required_providers {
-    azurerm = {
-      source  = "hashicorp/azurerm"
-      version = ">= 3.71, < 5.0.0"
+    azapi = {
+      source  = "Azure/azapi"
+      version = "~> 2.12"
     }
     random = {
       source  = "hashicorp/random"
@@ -25,9 +27,14 @@ terraform {
   }
 }
 
-provider "azurerm" {
-  features {}
-}
+provider "azapi" {}
+
+# NOTE: The azurerm provider block is required only when upgrading from a previous version of the module that used the azurerm provider. It can be removed in new implementations of the module or after upgrading.
+# provider "azurerm" {
+#   features {}
+# }
+
+data "azapi_client_config" "current" {}
 
 # This picks a random region from the list of regions.
 resource "random_integer" "region_index" {
@@ -41,31 +48,39 @@ module "naming" {
   version = "0.3.0"
 }
 
-# This is required for resource modules
-resource "azurerm_resource_group" "this" {
-  location = local.azure_regions[random_integer.region_index.result]
-  name     = module.naming.resource_group.name_unique
+# This is required for resource modules.
+#
+# Created with `azapi_resource` rather than `azurerm_resource_group`: an example
+# for an AzAPI module must not reintroduce the provider the module just dropped.
+resource "azapi_resource" "rg" {
+  location  = local.azure_regions[random_integer.region_index.result]
+  name      = module.naming.resource_group.name_unique
+  parent_id = "/subscriptions/${data.azapi_client_config.current.subscription_id}"
+  type      = "Microsoft.Resources/resourceGroups@2025-04-01"
+  body = {
+    properties = {}
+  }
 }
 
 # This is the module call
 module "firewall_policy" {
   source = "../.."
 
-  location            = azurerm_resource_group.this.location
-  name                = module.naming.firewall_policy.name_unique
-  resource_group_name = azurerm_resource_group.this.name
+  location = azapi_resource.rg.location
+  name     = module.naming.firewall_policy.name_unique
   # source             = "Azure/avm-res-network-firewallpolicy/azurerm"
   enable_telemetry = var.enable_telemetry
   firewall_policy_dns = {
     proxy_enabled = true
   }
+  parent_id = azapi_resource.rg.id
 }
 
 module "avd_core_rule_collection_group" {
   source = "../../modules/rule_collection_groups"
 
   # source             = "Azure/avm-res-network-firewallpolicy/azurerm//modules/rule_collection_groups"
-  firewall_policy_rule_collection_group_firewall_policy_id = module.firewall_policy.resource.id
+  firewall_policy_rule_collection_group_firewall_policy_id = module.firewall_policy.resource_id
   firewall_policy_rule_collection_group_name               = "NetworkRuleCollectionGroup"
   firewall_policy_rule_collection_group_priority           = 1000
   firewall_policy_rule_collection_group_network_rule_collection = [{
@@ -152,7 +167,7 @@ module "avd_optional_rule_collection_group" {
   source = "../../modules/rule_collection_groups"
 
   # source             = "Azure/avm-res-network-firewallpolicy/azurerm//modules/rule_collection_groups"
-  firewall_policy_rule_collection_group_firewall_policy_id = module.firewall_policy.resource.id
+  firewall_policy_rule_collection_group_firewall_policy_id = module.firewall_policy.resource_id
   firewall_policy_rule_collection_group_name               = "AVDOptionalRuleCollectionGroup"
   firewall_policy_rule_collection_group_priority           = 1050
   firewall_policy_rule_collection_group_application_rule_collection = [{
@@ -253,7 +268,7 @@ module "m365rulecollectiongroup" {
   source = "../../modules/rule_collection_groups"
 
   # source             = "Azure/avm-res-network-firewallpolicy/azurerm//modules/rule_collection_groups"
-  firewall_policy_rule_collection_group_firewall_policy_id = module.firewall_policy.resource.id
+  firewall_policy_rule_collection_group_firewall_policy_id = module.firewall_policy.resource_id
   firewall_policy_rule_collection_group_name               = "M365RuleCollectionGroup"
   firewall_policy_rule_collection_group_priority           = 2000
   firewall_policy_rule_collection_group_network_rule_collection = [{
@@ -277,7 +292,7 @@ module "internetrulecollectiongroup" {
   source = "../../modules/rule_collection_groups"
 
   # source             = "Azure/avm-res-network-firewallpolicy/azurerm//modules/rule_collection_groups"
-  firewall_policy_rule_collection_group_firewall_policy_id = module.firewall_policy.resource.id
+  firewall_policy_rule_collection_group_firewall_policy_id = module.firewall_policy.resource_id
   firewall_policy_rule_collection_group_name               = "InternetRuleCollectionGroup"
   firewall_policy_rule_collection_group_priority           = 3000
   firewall_policy_rule_collection_group_network_rule_collection = [{
@@ -303,9 +318,9 @@ module "internetrulecollectiongroup" {
 
 The following requirements are needed by this module:
 
-- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (>= 1.3.0)
+- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (>= 1.9, < 2.0)
 
-- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (>= 3.71, < 5.0.0)
+- <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) (~> 2.12)
 
 - <a name="requirement_random"></a> [random](#requirement\_random) (>= 3.5.0, < 4.0.0)
 
@@ -313,8 +328,9 @@ The following requirements are needed by this module:
 
 The following resources are used by this module:
 
-- [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
+- [azapi_resource.rg](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [random_integer.region_index](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/integer) (resource)
+- [azapi_client_config.current](https://registry.terraform.io/providers/Azure/azapi/latest/docs/data-sources/client_config) (data source)
 
 <!-- markdownlint-disable MD013 -->
 ## Required Inputs

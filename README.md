@@ -11,11 +11,9 @@ This is the module to create an Azure Firewall Policy
 
 The following requirements are needed by this module:
 
-- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.5)
+- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (>= 1.9, < 2.0)
 
 - <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) (~> 2.12)
-
-- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (>= 3.71, < 5.0.0)
 
 - <a name="requirement_modtm"></a> [modtm](#requirement\_modtm) (~> 0.3)
 
@@ -25,14 +23,16 @@ The following requirements are needed by this module:
 
 The following resources are used by this module:
 
-- [azurerm_firewall_policy.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/firewall_policy) (resource)
-- [azurerm_management_lock.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/management_lock) (resource)
-- [azurerm_monitor_diagnostic_setting.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_diagnostic_setting) (resource)
-- [azurerm_role_assignment.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) (resource)
-- [modtm_telemetry.telemetry](https://registry.terraform.io/providers/Azure/modtm/latest/docs/resources/telemetry) (resource)
+- [azapi_resource.diagnostic_settings](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
+- [azapi_resource.lock](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
+- [azapi_resource.role_assignments](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
+- [azapi_resource.this](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
+- [modtm_telemetry.telemetry](https://registry.terraform.io/providers/azure/modtm/latest/docs/resources/telemetry) (resource)
 - [random_uuid.telemetry](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/uuid) (resource)
+- [azapi_client_config.current](https://registry.terraform.io/providers/Azure/azapi/latest/docs/data-sources/client_config) (data source)
 - [azapi_client_config.telemetry](https://registry.terraform.io/providers/Azure/azapi/latest/docs/data-sources/client_config) (data source)
-- [modtm_module_source.telemetry](https://registry.terraform.io/providers/Azure/modtm/latest/docs/data-sources/module_source) (data source)
+- [azapi_resource.this](https://registry.terraform.io/providers/Azure/azapi/latest/docs/data-sources/resource) (data source)
+- [modtm_module_source.telemetry](https://registry.terraform.io/providers/azure/modtm/latest/docs/data-sources/module_source) (data source)
 
 <!-- markdownlint-disable MD013 -->
 ## Required Inputs
@@ -48,12 +48,6 @@ Type: `string`
 ### <a name="input_name"></a> [name](#input\_name)
 
 Description: (Required) The name which should be used for this Firewall Policy. Changing this forces a new Firewall Policy to be created.
-
-Type: `string`
-
-### <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name)
-
-Description: (Required) The name of the Resource Group where the Firewall Policy should exist. Changing this forces a new Firewall Policy to be created.
 
 Type: `string`
 
@@ -334,6 +328,34 @@ object({
 
 Default: `null`
 
+### <a name="input_ignore_body_changes"></a> [ignore\_body\_changes](#input\_ignore\_body\_changes)
+
+Description: Body paths that Terraform must stop managing on each underlying `azapi_resource`, keyed by resource type.
+
+This is the AzAPI escape hatch for a property that something outside Terraform owns. Each value is a list of JMESPath-style body paths, for example `["properties.intrusionDetection.profile"]`.
+
+Two members of the 2025-07-01 firewall policy body are writable but have no module input, because `hashicorp/azurerm` had no schema field for them either: `properties.dnsSettings.requireProxyForNetworkRules` and `properties.intrusionDetection.profile`. Set them out of band and list them here if you need them.
+
+- `authorization_locks` - (Optional) Paths to ignore on the management lock. Defaults to `[]`.
+- `authorization_role_assignments` - (Optional) Paths to ignore on the role assignments. Defaults to `[]`.
+- `insights_diagnostic_settings` - (Optional) Paths to ignore on the diagnostic settings. Defaults to `[]`.
+- `network_firewall_policies` - (Optional) Paths to ignore on the firewall policy. Defaults to `[]`.
+
+> Note: `ignore_body_changes` is a write-only argument and requires Terraform 1.11 or later. At the `[]` default the argument is omitted entirely, so earlier versions are unaffected.
+
+Type:
+
+```hcl
+object({
+    authorization_locks            = optional(list(string), [])
+    authorization_role_assignments = optional(list(string), [])
+    insights_diagnostic_settings   = optional(list(string), [])
+    network_firewall_policies      = optional(list(string), [])
+  })
+```
+
+Default: `{}`
+
 ### <a name="input_lock"></a> [lock](#input\_lock)
 
 Description:   Controls the Resource Lock configuration for this resource. The following properties can be specified:
@@ -352,25 +374,93 @@ object({
 
 Default: `null`
 
+### <a name="input_parent_id"></a> [parent\_id](#input\_parent\_id)
+
+Description: (Optional) The resource ID of the Resource Group where the Firewall Policy should exist. Changing this forces a new Firewall Policy to be created.
+
+The AVM-preferred alternative to `resource_group_name` (TFNFR38). Unlike `resource_group_name` it does not depend on the subscription the `azapi` provider is pointed at, so it is the safer input when the module is used across subscriptions. Supply this **or** `resource_group_name`, not both.
+
+Type: `string`
+
+Default: `null`
+
+### <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name)
+
+Description: (Optional) The name of the Resource Group where the Firewall Policy should exist. Changing this forces a new Firewall Policy to be created.
+
+Combined with the subscription of the `azapi` provider to build the resource group ID that the firewall policy is created under. Supply this **or** `parent_id`, not both. It is no longer required only because `parent_id` is the AVM-preferred spelling (TFNFR38); every existing caller can keep passing it and nothing changes.
+
+Type: `string`
+
+Default: `null`
+
+### <a name="input_resource_types"></a> [resource\_types](#input\_resource\_types)
+
+Description: The ARM type and API version used for each underlying `azapi_resource`.
+
+The defaults are not arbitrary and should not be changed without a reason. Each one is the LATEST API version embedded in `Azure/azapi` v2.13.0 for that type, which is the version `azapi_resource`'s state mover writes into state when a `moved` block adopts an existing `azurerm_*` resource. Matching it is what makes an upgrade plan empty rather than an in-place update.
+
+- `authorization_locks` - (Optional) Type of the management lock. Defaults to `Microsoft.Authorization/locks@2020-05-01`.
+- `authorization_role_assignments` - (Optional) Type of the role assignments. Defaults to `Microsoft.Authorization/roleAssignments@2022-04-01`.
+- `insights_diagnostic_settings` - (Optional) Type of the diagnostic settings. Defaults to `Microsoft.Insights/diagnosticSettings@2021-05-01-preview`, which is also the version `hashicorp/azurerm` v4.81.0 used.
+- `network_firewall_policies` - (Optional) Type of the firewall policy. Defaults to `Microsoft.Network/firewallPolicies@2025-07-01`.
+
+Type:
+
+```hcl
+object({
+    authorization_locks            = optional(string, "Microsoft.Authorization/locks@2020-05-01")
+    authorization_role_assignments = optional(string, "Microsoft.Authorization/roleAssignments@2022-04-01")
+    insights_diagnostic_settings   = optional(string, "Microsoft.Insights/diagnosticSettings@2021-05-01-preview")
+    network_firewall_policies      = optional(string, "Microsoft.Network/firewallPolicies@2025-07-01")
+  })
+```
+
+Default: `{}`
+
+### <a name="input_retry"></a> [retry](#input\_retry)
+
+Description: The retry configuration applied to every underlying `azapi_resource` (firewall policy, lock, role assignments, diagnostic settings).
+
+- `error_message_regex` - (Optional) A list of regular expressions matched against the error message. A match causes the request to be retried. Defaults to `["409 Conflict", "ScopeLocked", "CannotDeleteResource"]`.
+  - `409 Conflict` covers the conflict a not-yet-replicated service principal returns on a role assignment - the case `skip_service_principal_aad_check` used to handle client-side under `hashicorp/azurerm`.
+  - `ScopeLocked` and `CannotDeleteResource` cover TEARDOWN. A management lock on a firewall policy is INHERITED by every child scope, and Terraform has no dependency edge between `azapi_resource.lock` and its sibling `azapi_resource.role_assignments` / `azapi_resource.diagnostic_settings` - they all depend only on the policy, so Terraform is free to destroy them in parallel. Deleting a child before the lock deletion has propagated returns one of these two codes. Retrying lets the lock removal land and the delete succeed. Set this to `null` to disable retries entirely, which also disables that recovery.
+- `interval_seconds` - (Optional) Base number of seconds to wait between retries. Defaults to the AzAPI provider default (`10`).
+- `max_interval_seconds` - (Optional) Maximum number of seconds to wait between retries. Defaults to the AzAPI provider default (`180`).
+
+Setting `error_message_regex = null` - or any value that leaves it null - disables retries. The module collapses the whole object to `null` in that case (see `local.azapi_retry`), because the AzAPI provider marks `retry.error_message_regex` required inside an otherwise optional block and a present object with a null list cannot be planned.
+
+Type:
+
+```hcl
+object({
+    error_message_regex  = optional(list(string), ["409 Conflict", "ScopeLocked", "CannotDeleteResource"])
+    interval_seconds     = optional(number, null)
+    max_interval_seconds = optional(number, null)
+  })
+```
+
+Default: `{}`
+
 ### <a name="input_role_assignments"></a> [role\_assignments](#input\_role\_assignments)
 
 Description:   A map of role assignments to create on the <RESOURCE>. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
 
+  - `name` - (Optional) The name (a GUID) of the role assignment. If not set, a random UUID is generated. Changing this forces the creation of a new resource. Set it to the existing GUID when adopting a role assignment that was previously created by the `azurerm` provider, so that the module manages the real name rather than ignoring it.
   - `role_definition_id_or_name` - The ID or name of the role definition to assign to the principal.
   - `principal_id` - The ID of the principal to assign the role to.
   - `description` - (Optional) The description of the role assignment.
-  - `skip_service_principal_aad_check` - (Optional) If set to true, skips the Azure Active Directory check for the service principal in the tenant. Defaults to false.
+  - `skip_service_principal_aad_check` - (Optional) Accepted for interface compatibility and **no longer used**. It suppressed a client-side Entra ID replication check inside the `azurerm` provider; ARM has no equivalent request member, so nothing is sent. The same condition is now absorbed by `var.retry`, whose default `error_message_regex` retries the `409 Conflict` a not-yet-replicated principal returns.
   - `condition` - (Optional) The condition which will be used to scope the role assignment.
   - `condition_version` - (Optional) The version of the condition syntax. Leave as `null` if you are not using a condition, if you are then valid values are '2.0'.
   - `delegated_managed_identity_resource_id` - (Optional) The delegated Azure Resource Id which contains a Managed Identity. Changing this forces a new resource to be created. This field is only used in cross-tenant scenario.
   - `principal_type` - (Optional) The type of the `principal_id`. Possible values are `User`, `Group` and `ServicePrincipal`. It is necessary to explicitly set this attribute when creating role assignments if the principal creating the assignment is constrained by ABAC rules that filters on the PrincipalType attribute.
 
-  > Note: only set `skip_service_principal_aad_check` to true if you are assigning a role to a service principal.
-
 Type:
 
 ```hcl
 map(object({
+    name                                   = optional(string, null)
     role_definition_id_or_name             = string
     principal_id                           = string
     description                            = optional(string, null)
@@ -392,9 +482,60 @@ Type: `map(string)`
 
 Default: `null`
 
+### <a name="input_timeouts"></a> [timeouts](#input\_timeouts)
+
+Description: The timeouts applied to every underlying `azapi_resource` (firewall policy, lock, role assignments, diagnostic settings).
+
+Each value must be a string parsable as a Go duration, for example `"30s"`, `"5m"` or `"1h30m"`.
+
+A `null` value does NOT fall through to the AzAPI provider default. It falls through to the timeout the `hashicorp/azurerm` v4.81.0 resource this module used to declare had, so an upgraded deployment keeps the behaviour it already had:
+
+| resource | create | read | update | delete |
+|---|---|---|---|---|
+| firewall policy | `30m` | `5m` | `30m` | `30m` |
+| diagnostic settings | `30m` | `5m` | `30m` | `60m` |
+| lock | `30m` | `5m` | `30m` | `30m` |
+| role assignments | `30m` | `5m` | `30m` | `30m` |
+
+- `create` - (Optional) Timeout for create operations.
+- `delete` - (Optional) Timeout for delete operations.
+- `read` - (Optional) Timeout for read operations.
+- `update` - (Optional) Timeout for update operations.
+
+> Note: `var.firewall_policy_timeouts` still works and still applies to the firewall policy only. `var.timeouts` takes precedence over it.
+
+Type:
+
+```hcl
+object({
+    create = optional(string, null)
+    delete = optional(string, null)
+    read   = optional(string, null)
+    update = optional(string, null)
+  })
+```
+
+Default: `{}`
+
 ## Outputs
 
 The following outputs are exported:
+
+### <a name="output_child_policies"></a> [child\_policies](#output\_child\_policies)
+
+Description: The resource IDs of the child firewall policies of this firewall policy.
+
+### <a name="output_firewalls"></a> [firewalls](#output\_firewalls)
+
+Description: The resource IDs of the Azure Firewalls this firewall policy is associated with.
+
+### <a name="output_location"></a> [location](#output\_location)
+
+Description: The Azure Region the firewall policy is deployed to.
+
+### <a name="output_name"></a> [name](#output\_name)
+
+Description: The name of the firewall policy.
 
 ### <a name="output_resource"></a> [resource](#output\_resource)
 
@@ -409,9 +550,19 @@ Examples:
 
 Description: the resource id of the firewall policy
 
+### <a name="output_rule_collection_groups"></a> [rule\_collection\_groups](#output\_rule\_collection\_groups)
+
+Description: The resource IDs of the rule collection groups attached to this firewall policy. Populated from a live read, so a group created in the same apply does not appear until the next plan - see `data.tf`.
+
 ## Modules
 
-No modules.
+The following Modules are called:
+
+### <a name="module_interfaces"></a> [interfaces](#module\_interfaces)
+
+Source: Azure/avm-utl-interfaces/azure
+
+Version: 0.6.0
 
 <!-- markdownlint-disable-next-line MD041 -->
 ## Data Collection

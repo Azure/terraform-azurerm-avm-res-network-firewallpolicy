@@ -19,17 +19,15 @@ This module supports:
 
 The following requirements are needed by this module:
 
-- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.5)
+- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (>= 1.9, < 2.0)
 
 - <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) (~> 2.12)
-
-- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (>= 3.71, < 5.0.0)
 
 ## Resources
 
 The following resources are used by this module:
 
-- [azurerm_firewall_policy_rule_collection_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/firewall_policy_rule_collection_group) (resource)
+- [azapi_resource.this](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 
 <!-- markdownlint-disable MD013 -->
 ## Required Inputs
@@ -223,13 +221,113 @@ object({
 
 Default: `null`
 
+### <a name="input_ignore_body_changes"></a> [ignore\_body\_changes](#input\_ignore\_body\_changes)
+
+Description: Body paths that Terraform must stop managing on the underlying `azapi_resource`.
+
+This is the AzAPI escape hatch for a member of the request body that something outside Terraform owns -- a rule collection maintained by a policy engine, for instance. Each value is a list of JMESPath-style body paths.
+
+- `network_firewall_policies_rule_collection_groups` - (Optional) Paths to ignore on the rule collection group, for example `["properties.ruleCollections"]`. Defaults to `[]`.
+
+> Note: `ignore_body_changes` is a write-only argument and requires Terraform 1.11 or later. At the `[]` default the argument is omitted entirely, so earlier versions are unaffected.
+
+Type:
+
+```hcl
+object({
+    network_firewall_policies_rule_collection_groups = optional(list(string), [])
+  })
+```
+
+Default: `{}`
+
+### <a name="input_resource_types"></a> [resource\_types](#input\_resource\_types)
+
+Description: The ARM type and API version used for the underlying `azapi_resource`.
+
+The default is not arbitrary and should not be changed without a reason. It is the LATEST API version embedded in `Azure/azapi` v2.13.0 for this type, which is the version `azapi_resource`'s state mover writes into state when the `moved` block adopts an existing `azurerm_firewall_policy_rule_collection_group`. Matching it is what makes an upgrade plan empty rather than an in-place update.
+
+- `network_firewall_policies_rule_collection_groups` - (Optional) Type of the rule collection group. Defaults to `Microsoft.Network/firewallPolicies/ruleCollectionGroups@2025-07-01`.
+
+Type:
+
+```hcl
+object({
+    network_firewall_policies_rule_collection_groups = optional(string, "Microsoft.Network/firewallPolicies/ruleCollectionGroups@2025-07-01")
+  })
+```
+
+Default: `{}`
+
+### <a name="input_retry"></a> [retry](#input\_retry)
+
+Description: The retry configuration applied to the underlying `azapi_resource`.
+
+Unlike the parent module this does NOT retry `409 Conflict`. The parent retries it because a freshly created service principal makes role assignments fail that way; a rule collection group has no such well-understood transient failure, and ARM already serialises writes to the same firewall policy, so retrying blindly would only hide a real error.
+
+- `error_message_regex` - (Optional) A list of regular expressions matched against the error message. A match causes the request to be retried. Defaults to `["ScopeLocked", "CannotDeleteResource"]`, which covers TEARDOWN only: a management lock on the parent firewall policy is INHERITED by this rule collection group, and Terraform has no dependency edge between the parent's lock and this child, so a destroy can reach the group before the lock deletion has propagated. Set to `null` to disable retries entirely.
+- `interval_seconds` - (Optional) Base number of seconds to wait between retries. Defaults to the AzAPI provider default (`10`).
+- `max_interval_seconds` - (Optional) Maximum number of seconds to wait between retries. Defaults to the AzAPI provider default (`180`).
+
+Setting `error_message_regex = null` - or any value that leaves it null - disables retries. The module collapses the whole object to `null` in that case, because the AzAPI provider marks `retry.error_message_regex` required inside an otherwise optional block and a present object with a null list cannot be planned.
+
+Type:
+
+```hcl
+object({
+    error_message_regex  = optional(list(string), ["ScopeLocked", "CannotDeleteResource"])
+    interval_seconds     = optional(number, null)
+    max_interval_seconds = optional(number, null)
+  })
+```
+
+Default: `{}`
+
+### <a name="input_timeouts"></a> [timeouts](#input\_timeouts)
+
+Description: The timeouts applied to the underlying `azapi_resource`.
+
+Each value must be a string parsable as a Go duration, for example `"30s"`, `"5m"` or `"1h30m"`.
+
+A `null` value does NOT fall through to the AzAPI provider default. It falls through to the timeout `azurerm_firewall_policy_rule_collection_group` declared at `hashicorp/azurerm` v4.81.0 -- create `30m`, read `5m`, update `30m`, delete `30m` -- so an upgraded deployment keeps the behaviour it already had.
+
+- `create` - (Optional) Timeout for create operations.
+- `delete` - (Optional) Timeout for delete operations.
+- `read` - (Optional) Timeout for read operations.
+- `update` - (Optional) Timeout for update operations.
+
+> Note: `var.firewall_policy_rule_collection_group_timeouts` still works. `var.timeouts` takes precedence over it.
+
+Type:
+
+```hcl
+object({
+    create = optional(string, null)
+    delete = optional(string, null)
+    read   = optional(string, null)
+    update = optional(string, null)
+  })
+```
+
+Default: `{}`
+
 ## Outputs
 
 The following outputs are exported:
 
+### <a name="output_name"></a> [name](#output\_name)
+
+Description: The name of the firewall policy rule collection group.
+
 ### <a name="output_resource"></a> [resource](#output\_resource)
 
-Description: this is the resource of the rule collection group
+Description: The firewall policy rule collection group resource. Built explicitly from `azapi_resource.this` rather than exported wholesale, so that the write-only `ignore_body_changes` argument is never read.
+
+Examples:
+- module.<x>.resource.id
+- module.<x>.resource.name
+- module.<x>.resource.body.properties.priority
+- module.<x>.resource.body.properties.ruleCollections
 
 ### <a name="output_resource_id"></a> [resource\_id](#output\_resource\_id)
 
