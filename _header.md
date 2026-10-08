@@ -6,8 +6,10 @@ This is the module to create an Azure Firewall Policy
 
 This release migrates the module and its `rule_collection_groups` submodule from the `azurerm`
 provider to `azapi`. The in-module `moved` blocks map existing AzureRM state for the policy, rule
-collection groups, lock, role assignments and diagnostic settings to their AzAPI resources. Review
-the plan for unexpected destroys or replacements before applying.
+collection groups, lock, role assignments and diagnostic settings to their AzAPI resources. The
+first refreshed plan can include in-place updates as AzAPI adopts the existing resources. Review all
+planned actions and stop if any existing resource has an unexpected destroy or replacement. After
+applying the migration, run a fresh plan; it should show no changes.
 
 What you need to know:
 
@@ -18,6 +20,39 @@ What you need to know:
 - **Keep an `azurerm` provider block in the root module for the upgrade apply.** Terraform must be
   able to read the pre-migration state rows before the `moved` blocks convert them. The block can be
   removed afterwards.
+- **Map the target AzAPI provider when it is an alias.** The module derives the deployment
+  subscription from its AzAPI provider when `resource_group_name` is used, and scopes custom
+  role-name lookups to the subscription in `parent_id`. Role names are looked up at that
+  subscription; if a role name is not available there, pass its full role-definition ID. Map the
+  caller's target alias to the module's default `azapi` provider. The retained `azurerm` provider is
+  only for reading legacy state; do not pass it to the migrated module.
+
+  ```terraform
+  variable "target_subscription_id" {
+    type = string
+  }
+
+  provider "azurerm" {
+    features {}
+  }
+
+  provider "azapi" {
+    alias           = "target"
+    subscription_id = var.target_subscription_id
+  }
+
+  module "firewall_policy" {
+    source = "./firewall-policy-module"
+
+    name      = "example"
+    location  = "eastus"
+    parent_id = "/subscriptions/${var.target_subscription_id}/resourceGroups/example"
+
+    providers = {
+      azapi = azapi.target
+    }
+  }
+  ```
 - **The `resource` output changes shape.** It is now an object built from the `azapi_resource`:
   `id`, `name`, `location`, `tags`, `identity`, `parent_id`, `type`, `body`, `firewalls`,
   `child_policies` and `rule_collection_groups`. Other AzureRM attributes are read from

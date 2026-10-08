@@ -8,8 +8,8 @@ variable "firewall_policy_rule_collection_group_firewall_policy_id" {
   # recreates the rule collection group rather than failing the plan. The
   # validation catches it before that can happen.
   validation {
-    condition     = can(regex("^/subscriptions/[^/]+/resourceGroups/[^/]+/providers/Microsoft.Network/firewallPolicies/[^/]+$", var.firewall_policy_rule_collection_group_firewall_policy_id))
-    error_message = "`firewall_policy_rule_collection_group_firewall_policy_id` must be a valid firewall policy resource ID of the form `/subscriptions/<subscription-id>/resourceGroups/<name>/providers/Microsoft.Network/firewallPolicies/<name>`."
+    condition     = can(provider::azapi::parse_resource_id("Microsoft.Network/firewallPolicies", var.firewall_policy_rule_collection_group_firewall_policy_id))
+    error_message = "`firewall_policy_rule_collection_group_firewall_policy_id` must be a valid Azure Firewall Policy resource ID."
   }
 }
 
@@ -234,7 +234,7 @@ variable "resource_types" {
   description = <<DESCRIPTION
 The ARM type and API version used for the underlying `azapi_resource`.
 
-The default is not arbitrary and should not be changed without a reason. It is the LATEST API version embedded in `Azure/azapi` v2.13.0 for this type, which is the version `azapi_resource`'s state mover writes into state when the `moved` block adopts an existing `azurerm_firewall_policy_rule_collection_group`. Matching it is what makes an upgrade plan empty rather than an in-place update.
+The default is not arbitrary and should not be changed without a reason. It is the LATEST API version embedded in `Azure/azapi` v2.13.0 for this type, which is the version `azapi_resource`'s state mover writes into state when the `moved` block adopts an existing `azurerm_firewall_policy_rule_collection_group`. Matching it keeps the state migration consistent; the first migration plan can still include in-place updates as AzAPI adopts existing resources.
 
 - `network_firewall_policies_rule_collection_groups` - (Optional) Type of the rule collection group. Defaults to `Microsoft.Network/firewallPolicies/ruleCollectionGroups@2025-07-01`.
 DESCRIPTION

@@ -322,8 +322,8 @@ The AVM-preferred alternative to `resource_group_name` (TFNFR38). Unlike `resour
 DESCRIPTION
 
   validation {
-    condition     = var.parent_id == null ? true : can(regex("^/subscriptions/[^/]+/resourceGroups/[^/]+$", var.parent_id))
-    error_message = "`parent_id` must be a valid resource group ID of the form `/subscriptions/<subscription-id>/resourceGroups/<name>`."
+    condition     = var.parent_id == null || can(provider::azapi::parse_resource_id("Microsoft.Resources/resourceGroups", var.parent_id))
+    error_message = "`parent_id` must be a valid Azure Resource Group resource ID."
   }
 }
 
@@ -353,7 +353,7 @@ variable "resource_types" {
   description = <<DESCRIPTION
 The ARM type and API version used for each underlying `azapi_resource`.
 
-The defaults are not arbitrary and should not be changed without a reason. Each one is the LATEST API version embedded in `Azure/azapi` v2.13.0 for that type, which is the version `azapi_resource`'s state mover writes into state when a `moved` block adopts an existing `azurerm_*` resource. Matching it is what makes an upgrade plan empty rather than an in-place update.
+The defaults are not arbitrary and should not be changed without a reason. Each one is the LATEST API version embedded in `Azure/azapi` v2.13.0 for that type, which is the version `azapi_resource`'s state mover writes into state when a `moved` block adopts an existing `azurerm_*` resource. Matching it keeps the state migration consistent; the first migration plan can still include in-place updates as AzAPI adopts existing resources.
 
 - `authorization_locks` - (Optional) Type of the management lock. Defaults to `Microsoft.Authorization/locks@2020-05-01`.
 - `authorization_role_assignments` - (Optional) Type of the role assignments. Defaults to `Microsoft.Authorization/roleAssignments@2022-04-01`.
@@ -405,7 +405,7 @@ variable "role_assignments" {
   description = <<DESCRIPTION
   A map of role assignments to create on the <RESOURCE>. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
 
-  - `name` - (Optional) The name (a GUID) of the role assignment. If not set, a random UUID is generated. Changing this forces the creation of a new resource. Set it to the existing GUID when adopting a role assignment that was previously created by the `azurerm` provider, so that the module manages the real name rather than ignoring it.
+  - `name` - (Optional) The name (a GUID) of the role assignment. If not set, a random UUID is generated. The name is ignored after creation so an adopted assignment keeps its existing GUID. Set this before creation to choose a GUID; changing it later does not rename or replace the assignment.
   - `role_definition_id_or_name` - The ID or name of the role definition to assign to the principal.
   - `principal_id` - The ID of the principal to assign the role to.
   - `description` - (Optional) The description of the role assignment.

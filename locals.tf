@@ -51,6 +51,8 @@ locals {
   # ---------------------------------------------------------------------------
   firewall_policy_parent_id = var.parent_id != null ? var.parent_id : "/subscriptions/${data.azapi_client_config.current.subscription_id}/resourceGroups/${var.resource_group_name}"
 
+  firewall_policy_subscription_id = provider::azapi::parse_resource_id("Microsoft.Resources/resourceGroups", local.firewall_policy_parent_id).subscription_id
+
   # ---------------------------------------------------------------------------
   # THE POLICY BODY.
   #

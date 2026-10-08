@@ -8,8 +8,10 @@ This is the module to create an Azure Firewall Policy
 
 This release migrates the module and its `rule_collection_groups` submodule from the `azurerm`
 provider to `azapi`. The in-module `moved` blocks map existing AzureRM state for the policy, rule
-collection groups, lock, role assignments and diagnostic settings to their AzAPI resources. Review
-the plan for unexpected destroys or replacements before applying.
+collection groups, lock, role assignments and diagnostic settings to their AzAPI resources. The
+first refreshed plan can include in-place updates as AzAPI adopts the existing resources. Review all
+planned actions and stop if any existing resource has an unexpected destroy or replacement. After
+applying the migration, run a fresh plan; it should show no changes.
 
 What you need to know:
 
@@ -20,6 +22,39 @@ What you need to know:
 - **Keep an `azurerm` provider block in the root module for the upgrade apply.** Terraform must be
   able to read the pre-migration state rows before the `moved` blocks convert them. The block can be
   removed afterwards.
+- **Map the target AzAPI provider when it is an alias.** The module derives the deployment
+  subscription from its AzAPI provider when `resource_group_name` is used, and scopes custom
+  role-name lookups to the subscription in `parent_id`. Role names are looked up at that
+  subscription; if a role name is not available there, pass its full role-definition ID. Map the
+  caller's target alias to the module's default `azapi` provider. The retained `azurerm` provider is
+  only for reading legacy state; do not pass it to the migrated module.
+
+  ```terraform
+  variable "target_subscription_id" {
+    type = string
+  }
+
+  provider "azurerm" {
+    features {}
+  }
+
+  provider "azapi" {
+    alias           = "target"
+    subscription_id = var.target_subscription_id
+  }
+
+  module "firewall_policy" {
+    source = "./firewall-policy-module"
+
+    name      = "example"
+    location  = "eastus"
+    parent_id = "/subscriptions/${var.target_subscription_id}/resourceGroups/example"
+
+    providers = {
+      azapi = azapi.target
+    }
+  }
+  ```
 - **The `resource` output changes shape.** It is now an object built from the `azapi_resource`:
   `id`, `name`, `location`, `tags`, `identity`, `parent_id`, `type`, `body`, `firewalls`,
   `child_policies` and `rule_collection_groups`. Other AzureRM attributes are read from
@@ -426,7 +461,7 @@ Default: `null`
 
 Description: The ARM type and API version used for each underlying `azapi_resource`.
 
-The defaults are not arbitrary and should not be changed without a reason. Each one is the LATEST API version embedded in `Azure/azapi` v2.13.0 for that type, which is the version `azapi_resource`'s state mover writes into state when a `moved` block adopts an existing `azurerm_*` resource. Matching it is what makes an upgrade plan empty rather than an in-place update.
+The defaults are not arbitrary and should not be changed without a reason. Each one is the LATEST API version embedded in `Azure/azapi` v2.13.0 for that type, which is the version `azapi_resource`'s state mover writes into state when a `moved` block adopts an existing `azurerm_*` resource. Matching it keeps the state migration consistent; the first migration plan can still include in-place updates as AzAPI adopts existing resources.
 
 - `authorization_locks` - (Optional) Type of the management lock. Defaults to `Microsoft.Authorization/locks@2020-05-01`.
 - `authorization_role_assignments` - (Optional) Type of the role assignments. Defaults to `Microsoft.Authorization/roleAssignments@2022-04-01`.
@@ -474,7 +509,7 @@ Default: `{}`
 
 Description:   A map of role assignments to create on the <RESOURCE>. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
 
-  - `name` - (Optional) The name (a GUID) of the role assignment. If not set, a random UUID is generated. Changing this forces the creation of a new resource. Set it to the existing GUID when adopting a role assignment that was previously created by the `azurerm` provider, so that the module manages the real name rather than ignoring it.
+  - `name` - (Optional) The name (a GUID) of the role assignment. If not set, a random UUID is generated. The name is ignored after creation so an adopted assignment keeps its existing GUID. Set this before creation to choose a GUID; changing it later does not rename or replace the assignment.
   - `role_definition_id_or_name` - The ID or name of the role definition to assign to the principal.
   - `principal_id` - The ID of the principal to assign the role to.
   - `description` - (Optional) The description of the role assignment.

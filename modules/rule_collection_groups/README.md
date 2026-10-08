@@ -245,7 +245,7 @@ Default: `{}`
 
 Description: The ARM type and API version used for the underlying `azapi_resource`.
 
-The default is not arbitrary and should not be changed without a reason. It is the LATEST API version embedded in `Azure/azapi` v2.13.0 for this type, which is the version `azapi_resource`'s state mover writes into state when the `moved` block adopts an existing `azurerm_firewall_policy_rule_collection_group`. Matching it is what makes an upgrade plan empty rather than an in-place update.
+The default is not arbitrary and should not be changed without a reason. It is the LATEST API version embedded in `Azure/azapi` v2.13.0 for this type, which is the version `azapi_resource`'s state mover writes into state when the `moved` block adopts an existing `azurerm_firewall_policy_rule_collection_group`. Matching it keeps the state migration consistent; the first migration plan can still include in-place updates as AzAPI adopts existing resources.
 
 - `network_firewall_policies_rule_collection_groups` - (Optional) Type of the rule collection group. Defaults to `Microsoft.Network/firewallPolicies/ruleCollectionGroups@2025-07-01`.
 

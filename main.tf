@@ -67,7 +67,9 @@
 # same job with `strcontains(...)` against
 # `local.role_definition_resource_substring`, handing the name to AzureRM's
 # `role_definition_name` argument; that local is gone because the lookup now
-# lives in the interfaces module.
+# lives in the interfaces module. Scope that lookup to the subscription of
+# the policy, not the subscription selected by the AzAPI provider. Fully
+# qualified role definition IDs pass through without needing a name lookup.
 # -----------------------------------------------------------------------------
 module "interfaces" {
   source  = "Azure/avm-utl-interfaces/azure"
@@ -80,7 +82,7 @@ module "interfaces" {
     name  = var.lock.name
     notes = var.lock.kind == "CanNotDelete" ? "Cannot delete the resource or its child resources." : "Cannot delete or modify the resource or its child resources."
   }
-  role_assignment_definition_scope = "/subscriptions/${data.azapi_client_config.current.subscription_id}"
+  role_assignment_definition_scope = "/subscriptions/${local.firewall_policy_subscription_id}"
   role_assignments                 = var.role_assignments
 }
 
