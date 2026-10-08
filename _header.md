@@ -5,17 +5,16 @@ This is the module to create an Azure Firewall Policy
 ## Upgrading from v0.3.4 and earlier
 
 This release migrates the module and its `rule_collection_groups` submodule from the `azurerm`
-provider to `azapi`. The in-module `moved` blocks convert the existing state rows for the policy,
-rule collection groups, lock, role assignments and diagnostic settings in place, with no destroy and
-no replacement.
+provider to `azapi`. The in-module `moved` blocks map existing AzureRM state for the policy, rule
+collection groups, lock, role assignments and diagnostic settings to their AzAPI resources. Review
+the plan for unexpected destroys or replacements before applying.
 
 What you need to know:
 
 - **Existing inputs keep working.** `resource_group_name` is still accepted. The new `parent_id`
   input is the preferred alternative. Set exactly one of them.
-- **Plan with a normal refresh.** `terraform plan -refresh=false`, and any sovereign cloud, hit
-  [azapi#1227](https://github.com/Azure/terraform-provider-azapi/issues/1227) and plan a *replace*
-  instead of a move.
+- **Plan with refresh enabled.** Use Terraform's default refresh when planning the upgrade. Review
+  the plan and stop if it shows an unexpected replacement of an existing resource.
 - **Keep an `azurerm` provider block in the root module for the upgrade apply.** Terraform must be
   able to read the pre-migration state rows before the `moved` blocks convert them. The block can be
   removed afterwards.
