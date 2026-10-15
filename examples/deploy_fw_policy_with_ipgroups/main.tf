@@ -113,6 +113,8 @@ module "rule_collection_group" {
   firewall_policy_rule_collection_group_firewall_policy_id = module.firewall_policy.resource.id
   firewall_policy_rule_collection_group_name               = "IPGroupRCG"
   firewall_policy_rule_collection_group_priority           = 400
+  location                                                 = var.location
+  enable_telemetry                                         = var.enable_telemetry
   firewall_policy_rule_collection_group_application_rule_collection = [
     {
       action   = "Allow"

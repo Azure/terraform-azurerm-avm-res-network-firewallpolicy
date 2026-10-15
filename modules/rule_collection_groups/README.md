@@ -29,7 +29,10 @@ The following requirements are needed by this module:
 
 The following resources are used by this module:
 
+- [azapi_resource.telemetry](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource) (resource)
 - [azurerm_firewall_policy_rule_collection_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/firewall_policy_rule_collection_group) (resource)
+- [terraform_data.telemetry](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data) (resource)
+- [azapi_client_config.telemetry](https://registry.terraform.io/providers/Azure/azapi/latest/docs/data-sources/client_config) (data source)
 
 <!-- markdownlint-disable MD013 -->
 ## Required Inputs
@@ -54,9 +57,25 @@ Description: (Required) The priority of the Firewall Policy Rule Collection Grou
 
 Type: `number`
 
+### <a name="input_location"></a> [location](#input\_location)
+
+Description: The Azure region for this module's resources or telemetry deployment.
+
+Type: `string`
+
 ## Optional Inputs
 
 The following input variables are optional (have default values):
+
+### <a name="input_enable_telemetry"></a> [enable\_telemetry](#input\_enable\_telemetry)
+
+Description: This variable controls whether or not telemetry is enabled for the module.  
+For more information see <https://aka.ms/avm/telemetryinfo>.  
+If it is set to false, then no telemetry will be collected.
+
+Type: `bool`
+
+Default: `true`
 
 ### <a name="input_firewall_policy_rule_collection_group_application_rule_collection"></a> [firewall\_policy\_rule\_collection\_group\_application\_rule\_collection](#input\_firewall\_policy\_rule\_collection\_group\_application\_rule\_collection)
 

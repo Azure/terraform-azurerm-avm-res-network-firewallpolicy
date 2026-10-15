@@ -127,6 +127,8 @@ module "rule_collection_group" {
   firewall_policy_rule_collection_group_firewall_policy_id = module.firewall_policy.resource.id
   firewall_policy_rule_collection_group_name               = "IPGroupRCG"
   firewall_policy_rule_collection_group_priority           = 400
+  location                                                 = var.location
+  enable_telemetry                                         = var.enable_telemetry
   firewall_policy_rule_collection_group_application_rule_collection = [
     {
       action   = "Allow"
@@ -206,6 +208,14 @@ If it is set to false, then no telemetry will be collected.
 Type: `bool`
 
 Default: `true`
+
+### <a name="input_location"></a> [location](#input\_location)
+
+Description: The Azure region for this module's resources or telemetry deployment.
+
+Type: `string`
+
+Default: `"eastus"`
 
 ## Outputs
 
