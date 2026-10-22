@@ -6,6 +6,7 @@ terraform {
       source  = "hashicorp/azurerm"
       version = ">= 3.71, < 5.0.0"
     }
+    # tflint-ignore: terraform_unused_required_providers
     modtm = {
       source  = "registry.terraform.io/azure/modtm"
       version = "~> 0.3"
@@ -40,9 +41,8 @@ resource "azurerm_resource_group" "rg" {
 }
 
 module "vnet" {
-  source    = "Azure/avm-res-network-virtualnetwork/azurerm"
-  version   = "0.16.0"
-  providers = { modtm = modtm }
+  source  = "Azure/avm-res-network-virtualnetwork/azurerm"
+  version = "0.16.0"
 
   location         = azurerm_resource_group.rg.location
   parent_id        = azurerm_resource_group.rg.id
@@ -83,9 +83,8 @@ resource "azurerm_ip_group" "ipgroup_2" {
 
 # This is the module call
 module "firewall" {
-  source    = "Azure/avm-res-network-azurefirewall/azurerm"
-  version   = "0.4.0"
-  providers = { modtm = modtm }
+  source  = "Azure/avm-res-network-azurefirewall/azurerm"
+  version = "0.4.0"
 
   firewall_sku_name   = "AZFW_VNet"
   firewall_sku_tier   = "Standard"
