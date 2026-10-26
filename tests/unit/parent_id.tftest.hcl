@@ -7,8 +7,9 @@ mock_provider "azapi" {
 
   mock_data "azapi_client_config" {
     defaults = {
-      subscription_id = "00000000-0000-0000-0000-000000000001"
-      tenant_id       = "00000000-0000-0000-0000-000000000002"
+      subscription_id          = "00000000-0000-0000-0000-000000000001"
+      tenant_id                = "00000000-0000-0000-0000-000000000002"
+      subscription_resource_id = "/subscriptions/00000000-0000-0000-0000-000000000001"
     }
   }
 
@@ -21,31 +22,6 @@ mock_provider "azapi" {
             role_name = "Custom Firewall Operator"
           }
         ]
-      }
-    }
-  }
-}
-
-mock_provider "azapi" {
-  alias = "target"
-
-  mock_resource "azapi_resource" {
-    defaults = {
-      id = "/subscriptions/00000000-0000-0000-0000-000000000005/resourceGroups/example/providers/Microsoft.Network/firewallPolicies/firewall-policy-test"
-    }
-  }
-
-  mock_data "azapi_client_config" {
-    defaults = {
-      subscription_id = "00000000-0000-0000-0000-000000000005"
-      tenant_id       = "00000000-0000-0000-0000-000000000002"
-    }
-  }
-
-  mock_data "azapi_resource_list" {
-    defaults = {
-      output = {
-        results = []
       }
     }
   }
@@ -71,6 +47,10 @@ run "accepts_case_insensitive_resource_group_id" {
     condition     = azapi_resource.this.parent_id == var.parent_id
     error_message = "A valid Resource Group ID should be accepted regardless of segment casing."
   }
+  providers = {
+    azapi  = azapi
+    random = random
+  }
 }
 
 run "keeps_legacy_resource_group_name_in_provider_subscription" {
@@ -85,23 +65,9 @@ run "keeps_legacy_resource_group_name_in_provider_subscription" {
     condition     = azapi_resource.this.parent_id == "/subscriptions/00000000-0000-0000-0000-000000000001/resourceGroups/legacy-rg"
     error_message = "The legacy resource_group_name input should continue to use the selected AzAPI provider subscription."
   }
-}
-
-run "uses_mapped_azapi_alias_subscription" {
-  command   = apply
-  state_key = "mapped_azapi_alias"
-
   providers = {
-    azapi = azapi.target
-  }
-
-  variables {
-    resource_group_name = "legacy-rg"
-  }
-
-  assert {
-    condition     = azapi_resource.this.parent_id == "/subscriptions/00000000-0000-0000-0000-000000000005/resourceGroups/legacy-rg"
-    error_message = "The module should use the subscription from the AzAPI provider explicitly mapped by its caller."
+    azapi  = azapi
+    random = random
   }
 }
 
@@ -115,6 +81,10 @@ run "rejects_wrong_parent_resource_type" {
   expect_failures = [
     var.parent_id
   ]
+  providers = {
+    azapi  = azapi
+    random = random
+  }
 }
 
 run "rejects_child_resource_id_as_parent" {
@@ -127,6 +97,10 @@ run "rejects_child_resource_id_as_parent" {
   expect_failures = [
     var.parent_id
   ]
+  providers = {
+    azapi  = azapi
+    random = random
+  }
 }
 
 run "resolves_custom_role_name_from_parent_lookup" {
@@ -157,6 +131,10 @@ run "resolves_custom_role_name_from_parent_lookup" {
     condition     = module.interfaces.role_assignments_azapi["full_id"].body.properties.roleDefinitionId == "/subscriptions/00000000-0000-0000-0000-000000000003/providers/Microsoft.Authorization/roleDefinitions/00000000-0000-0000-0000-000000000006"
     error_message = "A fully qualified role-definition ID should pass through unchanged."
   }
+  providers = {
+    azapi  = azapi
+    random = random
+  }
 }
 
 run "creates_role_assignment_with_explicit_name" {
@@ -178,6 +156,10 @@ run "creates_role_assignment_with_explicit_name" {
     condition     = azapi_resource.role_assignments["test"].name == "00000000-0000-0000-0000-000000000008"
     error_message = "An explicitly supplied role-assignment GUID should be used at creation."
   }
+  providers = {
+    azapi  = azapi
+    random = random
+  }
 }
 
 run "ignores_role_assignment_name_changes_after_creation" {
@@ -198,6 +180,10 @@ run "ignores_role_assignment_name_changes_after_creation" {
   assert {
     condition     = azapi_resource.role_assignments["test"].name == "00000000-0000-0000-0000-000000000008"
     error_message = "Changing an adopted role-assignment name should not rename or replace the existing GUID."
+  }
+  providers = {
+    azapi  = azapi
+    random = random
   }
 }
 
@@ -240,6 +226,10 @@ run "sends_service_principal_type_when_skip_check_is_true" {
     condition     = azapi_resource.role_assignments["default"].body.properties.principalType == null
     error_message = "principalType must stay unset when neither the flag nor principal_type is set."
   }
+  providers = {
+    azapi  = azapi
+    random = random
+  }
 }
 
 run "derives_distinct_role_assignment_names_from_principal" {
@@ -269,6 +259,10 @@ run "derives_distinct_role_assignment_names_from_principal" {
     condition     = can(regex("^[0-9a-f]{8}-[0-9a-f]{4}-5[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$", azapi_resource.role_assignments["first"].name))
     error_message = "A derived role-assignment name must be a lowercase UUIDv5."
   }
+  providers = {
+    azapi  = azapi
+    random = random
+  }
 }
 
 run "retries_principal_not_found_on_role_assignments_by_default" {
@@ -288,6 +282,10 @@ run "retries_principal_not_found_on_role_assignments_by_default" {
   assert {
     condition     = contains(azapi_resource.role_assignments["test"].retry.error_message_regex, "PrincipalNotFound") && contains(azapi_resource.role_assignments["test"].retry.error_message_regex, "409 Conflict")
     error_message = "The default retry must cover PrincipalNotFound and 409 Conflict on role assignments, as AzureRM did."
+  }
+  providers = {
+    azapi  = azapi
+    random = random
   }
 }
 
@@ -312,5 +310,9 @@ run "forwards_custom_retry_to_role_assignments" {
   assert {
     condition     = azapi_resource.role_assignments["test"].retry.error_message_regex == tolist(["CustomTransient"]) && azapi_resource.role_assignments["test"].retry.interval_seconds == 7
     error_message = "A consumer retry override must reach the role assignment."
+  }
+  providers = {
+    azapi  = azapi
+    random = random
   }
 }

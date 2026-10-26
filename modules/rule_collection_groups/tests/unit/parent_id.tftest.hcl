@@ -1,6 +1,13 @@
-mock_provider "azapi" {}
+mock_provider "azapi" {
+  mock_data "azapi_client_config" {
+    defaults = {
+      subscription_resource_id = "/subscriptions/00000000-0000-0000-0000-000000000000"
+    }
+  }
+}
 
 variables {
+  location                                       = "eastus"
   firewall_policy_rule_collection_group_name     = "rule-collection-group-test"
   firewall_policy_rule_collection_group_priority = 100
 }

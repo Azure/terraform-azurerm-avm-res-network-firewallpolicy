@@ -1,5 +1,5 @@
 terraform {
-  # `Azure/avm-utl-interfaces/azure` 0.6.0 -- the AVM standard-interfaces composer this module now
+  # `Azure/avm-utl-interfaces/azure` -- the AVM standard-interfaces composer this module now
   # uses for its lock, role-assignment and diagnostic-setting bodies -- declares
   # `required_version = "~> 1.9"`. Terraform resolves the INTERSECTION of every constraint in the
   # graph, so a root left at `~> 1.5` would simply fail to initialise against it. The floor moves
