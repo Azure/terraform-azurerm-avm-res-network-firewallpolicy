@@ -44,8 +44,8 @@ resource "random_integer" "region_index" {
 
 # This ensures we have unique CAF compliant names for our resources.
 module "naming" {
-  source  = "Azure/naming/azurerm"
-  version = "0.3.0"
+  source  = "Azure/avm-utl-naming/azure"
+  version = "0.2.0"
 }
 
 # This is required for resource modules.
@@ -83,6 +83,8 @@ module "avd_core_rule_collection_group" {
   firewall_policy_rule_collection_group_firewall_policy_id = module.firewall_policy.resource_id
   firewall_policy_rule_collection_group_name               = "NetworkRuleCollectionGroup"
   firewall_policy_rule_collection_group_priority           = 1000
+  location                                                 = var.location
+  enable_telemetry                                         = var.enable_telemetry
   firewall_policy_rule_collection_group_network_rule_collection = [{
     action   = "Allow"
     name     = "AVDCoreNetworkRules"
@@ -170,6 +172,8 @@ module "avd_optional_rule_collection_group" {
   firewall_policy_rule_collection_group_firewall_policy_id = module.firewall_policy.resource_id
   firewall_policy_rule_collection_group_name               = "AVDOptionalRuleCollectionGroup"
   firewall_policy_rule_collection_group_priority           = 1050
+  location                                                 = var.location
+  enable_telemetry                                         = var.enable_telemetry
   firewall_policy_rule_collection_group_application_rule_collection = [{
     action   = "Allow"
     name     = "AVDOptionalApplicationRules"
@@ -271,6 +275,8 @@ module "m365rulecollectiongroup" {
   firewall_policy_rule_collection_group_firewall_policy_id = module.firewall_policy.resource_id
   firewall_policy_rule_collection_group_name               = "M365RuleCollectionGroup"
   firewall_policy_rule_collection_group_priority           = 2000
+  location                                                 = var.location
+  enable_telemetry                                         = var.enable_telemetry
   firewall_policy_rule_collection_group_network_rule_collection = [{
     action   = "Allow"
     name     = "M365NetworkRules"
@@ -295,6 +301,8 @@ module "internetrulecollectiongroup" {
   firewall_policy_rule_collection_group_firewall_policy_id = module.firewall_policy.resource_id
   firewall_policy_rule_collection_group_name               = "InternetRuleCollectionGroup"
   firewall_policy_rule_collection_group_priority           = 3000
+  location                                                 = var.location
+  enable_telemetry                                         = var.enable_telemetry
   firewall_policy_rule_collection_group_network_rule_collection = [{
     action   = "Allow"
     name     = "InternetNetworkRules"
@@ -351,6 +359,14 @@ Type: `bool`
 
 Default: `true`
 
+### <a name="input_location"></a> [location](#input\_location)
+
+Description: The Azure region for this module's resources or telemetry deployment.
+
+Type: `string`
+
+Default: `"eastus"`
+
 ## Outputs
 
 No outputs.
@@ -391,9 +407,9 @@ Version:
 
 ### <a name="module_naming"></a> [naming](#module\_naming)
 
-Source: Azure/naming/azurerm
+Source: Azure/avm-utl-naming/azure
 
-Version: 0.3.0
+Version: 0.2.0
 
 <!-- markdownlint-disable-next-line MD041 -->
 ## Data Collection

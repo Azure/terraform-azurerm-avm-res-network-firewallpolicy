@@ -1,13 +1,12 @@
 mock_provider "azapi" {
   mock_data "azapi_client_config" {
     defaults = {
-      subscription_id = "00000000-0000-0000-0000-000000000000"
-      tenant_id       = "00000000-0000-0000-0000-000000000001"
+      subscription_id          = "00000000-0000-0000-0000-000000000000"
+      subscription_resource_id = "/subscriptions/00000000-0000-0000-0000-000000000000"
+      tenant_id                = "00000000-0000-0000-0000-000000000001"
     }
   }
 }
-
-mock_provider "modtm" {}
 
 mock_provider "random" {
   mock_resource "random_uuid" {
@@ -90,7 +89,6 @@ run "seed_existing_assignment" {
   command = apply
   providers = {
     azapi  = azapi
-    modtm  = modtm
     random = random
   }
 }
@@ -99,7 +97,6 @@ run "real_provider_preserves_existing_guid" {
   command = plan
   providers = {
     azapi  = azapi.offline
-    modtm  = modtm
     random = random
   }
   plan_options {
@@ -123,7 +120,6 @@ run "real_provider_replaces_principal_edit_with_fresh_guid" {
   command = plan
   providers = {
     azapi  = azapi.offline
-    modtm  = modtm
     random = random
   }
   plan_options {
@@ -147,7 +143,6 @@ run "real_provider_replaces_role_edit_with_fresh_guid" {
   command = plan
   providers = {
     azapi  = azapi.offline
-    modtm  = modtm
     random = random
   }
   plan_options {
@@ -171,7 +166,6 @@ run "real_provider_replaces_delegated_identity_edit_with_fresh_guid" {
   command = plan
   providers = {
     azapi  = azapi.offline
-    modtm  = modtm
     random = random
   }
   plan_options {
@@ -196,7 +190,6 @@ run "real_provider_replaces_immutable_and_mutable_edit_with_fresh_guid" {
   command = plan
   providers = {
     azapi  = azapi.offline
-    modtm  = modtm
     random = random
   }
   plan_options {
@@ -221,7 +214,6 @@ run "real_provider_allows_description_edit" {
   command = plan
   providers = {
     azapi  = azapi.offline
-    modtm  = modtm
     random = random
   }
   plan_options {
@@ -246,7 +238,6 @@ run "real_provider_allows_condition_edit" {
   command = plan
   providers = {
     azapi  = azapi.offline
-    modtm  = modtm
     random = random
   }
   plan_options {
@@ -272,7 +263,6 @@ run "real_provider_accepts_equivalent_role_id_casing" {
   command = plan
   providers = {
     azapi  = azapi.offline
-    modtm  = modtm
     random = random
   }
   plan_options {
@@ -296,7 +286,6 @@ run "remove_old_assignment" {
   command = apply
   providers = {
     azapi  = azapi
-    modtm  = modtm
     random = random
   }
   variables {
@@ -308,7 +297,6 @@ run "recreate_with_new_principal_and_guid" {
   command = apply
   providers = {
     azapi  = azapi
-    modtm  = modtm
     random = random
   }
   variables {
@@ -329,7 +317,6 @@ run "seed_delegated_identity" {
   command = apply
   providers = {
     azapi  = azapi
-    modtm  = modtm
     random = random
   }
   variables {
@@ -347,7 +334,6 @@ run "real_provider_replaces_delegated_identity_removal_with_fresh_guid" {
   command = plan
   providers = {
     azapi  = azapi.offline
-    modtm  = modtm
     random = random
   }
   plan_options {
