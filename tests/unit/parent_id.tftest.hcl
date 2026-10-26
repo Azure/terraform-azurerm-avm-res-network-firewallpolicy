@@ -130,9 +130,9 @@ run "rejects_child_resource_id_as_parent" {
   ]
 }
 
-run "uses_parent_subscription_for_custom_role_name_lookup" {
+run "resolves_custom_role_name_from_parent_lookup" {
   command   = apply
-  state_key = "custom_role_parent_subscription"
+  state_key = "custom_role_parent_lookup"
 
   variables {
     parent_id = "/subscriptions/00000000-0000-0000-0000-000000000003/resourceGroups/example"
@@ -150,13 +150,8 @@ run "uses_parent_subscription_for_custom_role_name_lookup" {
   }
 
   assert {
-    condition     = local.firewall_policy_subscription_id == "00000000-0000-0000-0000-000000000003"
-    error_message = "Role-definition name lookups must use the subscription containing the firewall policy."
-  }
-
-  assert {
     condition     = module.interfaces.role_assignments_azapi["custom"].body.properties.roleDefinitionId == "/subscriptions/00000000-0000-0000-0000-000000000003/providers/Microsoft.Authorization/roleDefinitions/00000000-0000-0000-0000-000000000007"
-    error_message = "A role name returned by the target subscription lookup should resolve to that subscription's role-definition ID."
+    error_message = "A role name returned by the parent lookup should resolve to that role-definition ID."
   }
 
   assert {
@@ -204,5 +199,119 @@ run "ignores_role_assignment_name_changes_after_creation" {
   assert {
     condition     = azapi_resource.role_assignments["test"].name == "00000000-0000-0000-0000-000000000008"
     error_message = "Changing an adopted role-assignment name should not rename or replace the existing GUID."
+  }
+}
+
+run "sends_service_principal_type_when_skip_check_is_true" {
+  command   = apply
+  state_key = "principal_type_fallback"
+
+  variables {
+    parent_id = "/subscriptions/00000000-0000-0000-0000-000000000003/resourceGroups/example"
+    role_assignments = {
+      skip = {
+        role_definition_id_or_name       = "/subscriptions/00000000-0000-0000-0000-000000000003/providers/Microsoft.Authorization/roleDefinitions/00000000-0000-0000-0000-000000000006"
+        principal_id                     = "00000000-0000-0000-0000-000000000004"
+        skip_service_principal_aad_check = true
+      }
+      explicit = {
+        role_definition_id_or_name       = "/subscriptions/00000000-0000-0000-0000-000000000003/providers/Microsoft.Authorization/roleDefinitions/00000000-0000-0000-0000-000000000006"
+        principal_id                     = "00000000-0000-0000-0000-000000000004"
+        skip_service_principal_aad_check = true
+        principal_type                   = "Group"
+      }
+      default = {
+        role_definition_id_or_name = "/subscriptions/00000000-0000-0000-0000-000000000003/providers/Microsoft.Authorization/roleDefinitions/00000000-0000-0000-0000-000000000006"
+        principal_id               = "00000000-0000-0000-0000-000000000004"
+      }
+    }
+  }
+
+  assert {
+    condition     = azapi_resource.role_assignments["skip"].body.properties.principalType == "ServicePrincipal"
+    error_message = "skip_service_principal_aad_check = true must send principalType ServicePrincipal when principal_type is unset."
+  }
+
+  assert {
+    condition     = azapi_resource.role_assignments["explicit"].body.properties.principalType == "Group"
+    error_message = "An explicit principal_type must win over skip_service_principal_aad_check."
+  }
+
+  assert {
+    condition     = azapi_resource.role_assignments["default"].body.properties.principalType == null
+    error_message = "principalType must stay unset when neither the flag nor principal_type is set."
+  }
+}
+
+run "derives_distinct_role_assignment_names_from_principal" {
+  command   = apply
+  state_key = "derived_role_assignment_names"
+
+  variables {
+    parent_id = "/subscriptions/00000000-0000-0000-0000-000000000003/resourceGroups/example"
+    role_assignments = {
+      first = {
+        role_definition_id_or_name = "/subscriptions/00000000-0000-0000-0000-000000000003/providers/Microsoft.Authorization/roleDefinitions/00000000-0000-0000-0000-000000000006"
+        principal_id               = "00000000-0000-0000-0000-000000000004"
+      }
+      second = {
+        role_definition_id_or_name = "/subscriptions/00000000-0000-0000-0000-000000000003/providers/Microsoft.Authorization/roleDefinitions/00000000-0000-0000-0000-000000000006"
+        principal_id               = "00000000-0000-0000-0000-00000000000a"
+      }
+    }
+  }
+
+  assert {
+    condition     = azapi_resource.role_assignments["first"].name != azapi_resource.role_assignments["second"].name
+    error_message = "Assignments with different principals must get different derived names."
+  }
+
+  assert {
+    condition     = can(regex("^[0-9a-f]{8}-[0-9a-f]{4}-5[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$", azapi_resource.role_assignments["first"].name))
+    error_message = "A derived role-assignment name must be a lowercase UUIDv5."
+  }
+}
+
+run "retries_principal_not_found_on_role_assignments_by_default" {
+  command   = apply
+  state_key = "default_retry"
+
+  variables {
+    parent_id = "/subscriptions/00000000-0000-0000-0000-000000000003/resourceGroups/example"
+    role_assignments = {
+      test = {
+        role_definition_id_or_name = "/subscriptions/00000000-0000-0000-0000-000000000003/providers/Microsoft.Authorization/roleDefinitions/00000000-0000-0000-0000-000000000006"
+        principal_id               = "00000000-0000-0000-0000-000000000004"
+      }
+    }
+  }
+
+  assert {
+    condition     = contains(azapi_resource.role_assignments["test"].retry.error_message_regex, "PrincipalNotFound") && contains(azapi_resource.role_assignments["test"].retry.error_message_regex, "409 Conflict")
+    error_message = "The default retry must cover PrincipalNotFound and 409 Conflict on role assignments, as AzureRM did."
+  }
+}
+
+run "forwards_custom_retry_to_role_assignments" {
+  command   = apply
+  state_key = "custom_retry"
+
+  variables {
+    parent_id = "/subscriptions/00000000-0000-0000-0000-000000000003/resourceGroups/example"
+    retry = {
+      error_message_regex = ["CustomTransient"]
+      interval_seconds    = 7
+    }
+    role_assignments = {
+      test = {
+        role_definition_id_or_name = "/subscriptions/00000000-0000-0000-0000-000000000003/providers/Microsoft.Authorization/roleDefinitions/00000000-0000-0000-0000-000000000006"
+        principal_id               = "00000000-0000-0000-0000-000000000004"
+      }
+    }
+  }
+
+  assert {
+    condition     = azapi_resource.role_assignments["test"].retry.error_message_regex == tolist(["CustomTransient"]) && azapi_resource.role_assignments["test"].retry.interval_seconds == 7
+    error_message = "A consumer retry override must reach the role assignment."
   }
 }

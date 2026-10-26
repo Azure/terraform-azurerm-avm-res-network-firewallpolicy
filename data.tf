@@ -1,11 +1,9 @@
-# The subscription this module's provider instance is pointed at. Used for two things only:
+# The subscription this module's provider instance is pointed at. Used for one thing only:
 #
-#   1. `local.firewall_policy_parent_id`, the resource group ID that `azapi_resource.this` needs
-#      as its `parent_id`. AzureRM took `resource_group_name` and composed the same ID internally
-#      (`firewallpolicies.NewFirewallPolicyID(subscriptionId, resourceGroupName, name)`,
-#      `firewall_policy_resource.go` L67); this module now composes it explicitly.
-#   2. `role_assignment_definition_scope` on `module.interfaces`, which needs a subscription scope
-#      to resolve a role definition NAME to its ID.
+#   `local.firewall_policy_parent_id`, the resource group ID that `azapi_resource.this` needs
+#   as its `parent_id`. AzureRM took `resource_group_name` and composed the same ID internally
+#   (`firewallpolicies.NewFirewallPolicyID(subscriptionId, resourceGroupName, name)`,
+#   `firewall_policy_resource.go` L67); this module now composes it explicitly.
 #
 # 🔴 THE PROVIDER ALIAS MATTERS. `data.azapi_client_config` reports the subscription of the AZAPI
 # provider instance, which before this migration was irrelevant to where the policy landed --

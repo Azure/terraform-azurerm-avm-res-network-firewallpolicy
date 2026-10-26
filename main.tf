@@ -67,9 +67,10 @@
 # same job with `strcontains(...)` against
 # `local.role_definition_resource_substring`, handing the name to AzureRM's
 # `role_definition_name` argument; that local is gone because the lookup now
-# lives in the interfaces module. Scope that lookup to the subscription of
-# the policy, not the subscription selected by the AzAPI provider. Fully
-# qualified role definition IDs pass through without needing a name lookup.
+# lives in the interfaces module. Scope that lookup to the policy's parent
+# resource group, as AzureRM did at the assignment scope, so resource-group
+# custom roles and inherited roles both resolve. Fully qualified role
+# definition IDs pass through without needing a name lookup.
 # -----------------------------------------------------------------------------
 module "interfaces" {
   source  = "Azure/avm-utl-interfaces/azure"
@@ -82,7 +83,7 @@ module "interfaces" {
     name  = var.lock.name
     notes = var.lock.kind == "CanNotDelete" ? "Cannot delete the resource or its child resources." : "Cannot delete or modify the resource or its child resources."
   }
-  role_assignment_definition_scope = "/subscriptions/${local.firewall_policy_subscription_id}"
+  role_assignment_definition_scope = local.firewall_policy_parent_id
   role_assignments                 = var.role_assignments
 }
 
@@ -272,21 +273,21 @@ resource "azapi_resource" "lock" {
 # ROLE ASSIGNMENTS. `for_each` keys are the consumer's `var.role_assignments`
 # keys, unchanged, so the move is key-for-key.
 #
-# 🔴 `ignore_changes = [name]` IS NOT OPTIONAL HERE.
-# `avm-utl-interfaces` computes `name = coalesce(v.name, random_uuid[k].result)`.
+# 🔴 `ignore_changes = [name]` KEEPS AN ADOPTED GUID.
 # A role assignment created by the AzureRM provider has a SERVER-ASSIGNED GUID
-# for a name, which the fresh `random_uuid` will never match -- and `name` is a
-# replacement trigger on `azapi_resource`. Without this entry, every adopted
-# role assignment plans as DESTROY-AND-CREATE, which is a real outage window on
-# an RBAC assignment. The `avm-tf-migration` SKILL blesses this exact mitigation
-# at L107-117.
+# for a name, and `name` is a replacement trigger on `azapi_resource`. Without
+# this entry, every adopted role assignment plans as DESTROY-AND-CREATE, which
+# is a real outage window on an RBAC assignment. The `avm-tf-migration` SKILL
+# blesses this exact mitigation at L107-117.
 #
-# ✅ AND THERE IS AN ESCAPE HATCH: `var.role_assignments[*].name` is an
-# ADDITIVE optional member (new in this version) that lets a consumer pin the
-# real GUID, after which `ignore_changes` has nothing to hide. `name` is
-# otherwise irrelevant to a role assignment's behaviour -- ARM derives nothing
-# from it.
-#
+# ✅ A REPLACEMENT GETS A NEW GUID. ARM rejects an in-place change to the
+# principal, the role definition or the delegated identity
+# (`RoleAssignmentUpdateNotPermitted`). `replace_triggers_refs` replaces the
+# assignment when one of them changes, and a replacement ignores `ignore_changes`
+# and takes the configured name. That name is `var.role_assignments[*].name`
+# when set, otherwise a UUIDv5 derived from the policy, principal, role and
+# delegated identity, so a changed assignment gets a new GUID. A pinned name is
+# reused by the replacement, because Terraform cannot see the previous one.
 # 🔴 `ignore_null_property = true` IS NOT COSMETIC HERE -- IT FIXES A PERPETUAL
 # DIFF. `avm-utl-interfaces` emits EVERY optional body member, using an explicit
 # JSON `null` for the ones the consumer did not set. `principalType` is the one
@@ -317,26 +318,57 @@ resource "azapi_resource" "lock" {
 # affected members (`description`, `condition`) are ones ARM does not let you
 # unset independently anyway. Recorded as a behavioural note, not a defect.
 #
-# ⚠️ `skip_service_principal_aad_check` is accepted and IGNORED. AzureRM used
-# it to suppress its own client-side AAD replication check; ARM has no
-# equivalent request member, so the interfaces module does not emit one. The
-# same condition is now handled by `var.retry`, whose default
-# `error_message_regex` retries the `409 Conflict` that a not-yet-replicated
-# principal produces. Recorded as a behavioural difference, not a bug.
+# ⚠️ `skip_service_principal_aad_check` IS RESTORED AS REQUEST BEHAVIOUR. ARM has
+# no request member with that name, but AzureRM sent `principalType =
+# "ServicePrincipal"` when the flag was true. The body below does the same unless
+# `principal_type` is set, in which case the explicit value wins. A
+# not-yet-replicated principal's `409 Conflict` or `PrincipalNotFound` is still
+# retried by `var.retry`.
 # -----------------------------------------------------------------------------
 resource "azapi_resource" "role_assignments" {
   for_each = module.interfaces.role_assignments_azapi
 
-  name      = each.value.name
+  # A pinned name wins. Otherwise derive one, so a replacement gets a new GUID.
+  name = coalesce(
+    var.role_assignments[each.key].name,
+    uuidv5("url", join("|", [
+      lower(azapi_resource.this.id),
+      lower(each.value.body.properties.principalId),
+      lower(each.value.body.properties.roleDefinitionId),
+      lower(coalesce(each.value.body.properties.delegatedManagedIdentityResourceId, "-")),
+    ]))
+  )
   parent_id = azapi_resource.this.id
   type      = var.resource_types.authorization_role_assignments
-  body      = each.value.body
+  # Lowercase the immutable IDs so a casing-only change does not replace the assignment.
+  body = merge(each.value.body, {
+    properties = merge(
+      each.value.body.properties,
+      {
+        principalId      = lower(each.value.body.properties.principalId)
+        roleDefinitionId = lower(each.value.body.properties.roleDefinitionId)
+      },
+      each.value.body.properties.delegatedManagedIdentityResourceId == null ? {} : {
+        delegatedManagedIdentityResourceId = lower(each.value.body.properties.delegatedManagedIdentityResourceId)
+      },
+      var.role_assignments[each.key].skip_service_principal_aad_check && var.role_assignments[each.key].principal_type == null ? {
+        principalType = "ServicePrincipal"
+      } : {},
+    )
+  })
   ignore_body_changes = length(var.ignore_body_changes.authorization_role_assignments) > 0 ? (
     var.ignore_body_changes.authorization_role_assignments
   ) : null
+  # Keeps the configured casing after refresh, so Azure's casing cannot trigger a replacement.
+  ignore_casing = true
   # 🔴 See the `principalType` note above -- this is a perpetual-diff fix and
   # AzureRM `omitempty` parity, not a cosmetic flag.
-  ignore_null_property   = true
+  ignore_null_property = true
+  replace_triggers_refs = [
+    "properties.principalId",
+    "properties.roleDefinitionId",
+    "properties.delegatedManagedIdentityResourceId",
+  ]
   response_export_values = []
   # 🔴 NOT a bare `retry = var.retry` -- see `local.azapi_retry` in `locals.tf`.
   retry = local.azapi_retry
@@ -348,8 +380,9 @@ resource "azapi_resource" "role_assignments" {
     update = local.timeouts.authorization_role_assignments.update
   }
 
-  # ONLY `name`. The `response_export_values` pin was withdrawn -- see
-  # `azapi_resource.this`. `name` stays, and the SKILL blesses it explicitly.
+  # `name` keeps an adopted GUID on update; a replacement ignores it and takes
+  # the configured name above. The `response_export_values` pin stays withdrawn,
+  # see `azapi_resource.this`.
   lifecycle {
     ignore_changes = [
       name,
