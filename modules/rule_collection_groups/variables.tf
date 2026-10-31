@@ -88,6 +88,20 @@ variable "firewall_policy_rule_collection_group_application_rule_collection" {
 - `port` - (Required) Port number of the protocol. Range is 0-64000.
 - `type` - (Required) Protocol type. Possible values are `Http` and `Https`.
 EOT
+
+  validation {
+    condition = var.firewall_policy_rule_collection_group_application_rule_collection == null ? true : alltrue(flatten([
+      for collection in var.firewall_policy_rule_collection_group_application_rule_collection : [
+        for rule in collection.rule : (
+          length(coalesce(rule.destination_fqdns, [])) +
+          length(coalesce(rule.destination_urls, [])) +
+          length(coalesce(rule.destination_fqdn_tags, [])) +
+          length(coalesce(rule.web_categories, []))
+        ) > 0
+      ]
+    ]))
+    error_message = "Each application rule must set at least one of `destination_fqdns`, `destination_urls`, `destination_fqdn_tags` or `web_categories`."
+  }
 }
 
 variable "firewall_policy_rule_collection_group_nat_rule_collection" {
