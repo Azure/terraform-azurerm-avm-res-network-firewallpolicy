@@ -31,7 +31,7 @@ resource "random_integer" "region_index" {
 # This ensures we have unique CAF compliant names for our resources.
 module "naming" {
   source  = "Azure/avm-utl-naming/azure"
-  version = "0.2.0"
+  version = "0.3.0"
 }
 
 # This is required for resource modules
@@ -42,7 +42,7 @@ resource "azurerm_resource_group" "rg" {
 
 module "vnet" {
   source  = "Azure/avm-res-network-virtualnetwork/azurerm"
-  version = "0.16.0"
+  version = "0.22.3"
 
   location         = azurerm_resource_group.rg.location
   parent_id        = azurerm_resource_group.rg.id
