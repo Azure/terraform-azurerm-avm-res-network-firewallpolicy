@@ -49,7 +49,7 @@ locals {
   # replaces the policy instead of adopting it. Switch to `parent_id` in a
   # separate change, after the migration plan has come back empty.
   # ---------------------------------------------------------------------------
-  firewall_policy_parent_id = var.parent_id != null ? var.parent_id : "/subscriptions/${data.azapi_client_config.current.subscription_id}/resourceGroups/${var.resource_group_name}"
+  firewall_policy_parent_id = var.parent_id != null ? var.parent_id : "/subscriptions/${terraform_data.subscription_id.input}/resourceGroups/${var.resource_group_name}"
 
   # ---------------------------------------------------------------------------
   # THE POLICY BODY.

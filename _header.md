@@ -15,6 +15,12 @@ What you need to know:
 
 - **Existing inputs keep working.** `resource_group_name` is still accepted. The new `parent_id`
   input is the preferred alternative. Set exactly one of them.
+- **Upgrading with `resource_group_name`.** The module reads the subscription from its AzAPI
+  provider once and keeps it, so a `depends_on` on the module block with pending changes does not
+  force a replacement later. The plan that first creates this record has no stored value yet: run
+  the upgrade plan while the resources named in your `depends_on` have no pending changes, or pass
+  `parent_id`. To move the policy to another subscription, pass `parent_id`; the kept value is not
+  refreshed when the provider's subscription changes.
 - **Plan with refresh enabled.** Use Terraform's default refresh when planning the upgrade. Review
   the plan and stop if it shows an unexpected replacement of an existing resource.
 - **Keep an `azurerm` provider block in the root module for the upgrade apply.** Terraform must be

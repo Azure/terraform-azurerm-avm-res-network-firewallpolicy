@@ -16,6 +16,17 @@
 # gated on `var.enable_telemetry`; this one must exist unconditionally.
 data "azapi_client_config" "current" {}
 
+# A `depends_on` on the caller's module block with pending changes defers the read above to apply
+# time, which makes `parent_id` unknown and replaces the policy. The snapshot keeps the first value
+# it saw: https://developer.hashicorp.com/terraform/language/meta-arguments/depends_on#processing-and-planning-consequences
+resource "terraform_data" "subscription_id" {
+  input = data.azapi_client_config.current.subscription_id
+
+  lifecycle {
+    ignore_changes = [input]
+  }
+}
+
 # =============================================================================
 # READ-ONLY BACK-REFERENCES: `childPolicies`, `firewalls` and
 # `ruleCollectionGroups`.
