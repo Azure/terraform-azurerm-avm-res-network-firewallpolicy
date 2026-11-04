@@ -20,11 +20,6 @@ terraform {
       source  = "hashicorp/azurerm"
       version = ">= 3.71, < 5.0.0"
     }
-    # tflint-ignore: terraform_unused_required_providers
-    modtm = {
-      source  = "registry.terraform.io/azure/modtm"
-      version = "~> 0.3"
-    }
     random = {
       source  = "hashicorp/random"
       version = ">= 3.5.0, < 4.0.0"
@@ -132,7 +127,6 @@ module "rule_collection_group" {
   firewall_policy_rule_collection_group_firewall_policy_id = module.firewall_policy.resource.id
   firewall_policy_rule_collection_group_name               = "IPGroupRCG"
   firewall_policy_rule_collection_group_priority           = 400
-  location                                                 = var.location
   enable_telemetry                                         = var.enable_telemetry
   firewall_policy_rule_collection_group_application_rule_collection = [
     {
@@ -170,6 +164,7 @@ module "rule_collection_group" {
       ]
     }
   ]
+  location = var.location
 }
 ```
 
@@ -181,8 +176,6 @@ The following requirements are needed by this module:
 - <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (>= 1.3.0)
 
 - <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (>= 3.71, < 5.0.0)
-
-- <a name="requirement_modtm"></a> [modtm](#requirement\_modtm) (~> 0.3)
 
 - <a name="requirement_random"></a> [random](#requirement\_random) (>= 3.5.0, < 4.0.0)
 

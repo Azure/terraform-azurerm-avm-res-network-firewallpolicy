@@ -2,6 +2,9 @@
 
 This is the sub-module to create Rule Collection Groups in Azure Firewall Policy
 
+Telemetry is enabled by default and requires `location`. Set
+`enable_telemetry = false` to omit `location` or pass `null`.
+
 ## Features
 
 This module supports:

@@ -16,12 +16,6 @@ variable "firewall_policy_rule_collection_group_priority" {
   nullable    = false
 }
 
-variable "location" {
-  type        = string
-  description = "The Azure region for this module's resources or telemetry deployment."
-  nullable    = false
-}
-
 variable "enable_telemetry" {
   type        = bool
   default     = true
@@ -180,4 +174,15 @@ variable "firewall_policy_rule_collection_group_timeouts" {
  - `read` - (Defaults to 5 minutes) Used when retrieving the Firewall Policy Rule Collection Group.
  - `update` - (Defaults to 30 minutes) Used when updating the Firewall Policy Rule Collection Group.
 EOT
+}
+
+variable "location" {
+  type        = string
+  default     = null
+  description = "The Azure region for this module's telemetry deployment. Required when telemetry is enabled."
+
+  validation {
+    condition     = var.location != null || !var.enable_telemetry
+    error_message = "The location must not be null when telemetry is enabled."
+  }
 }

@@ -56,7 +56,6 @@ module "avd_core_rule_collection_group" {
   firewall_policy_rule_collection_group_firewall_policy_id = module.firewall_policy.resource.id
   firewall_policy_rule_collection_group_name               = "NetworkRuleCollectionGroup"
   firewall_policy_rule_collection_group_priority           = 1000
-  location                                                 = var.location
   enable_telemetry                                         = var.enable_telemetry
   firewall_policy_rule_collection_group_network_rule_collection = [{
     action   = "Allow"
@@ -136,6 +135,7 @@ module "avd_core_rule_collection_group" {
     ]
     }
   ]
+  location = var.location
 }
 
 module "avd_optional_rule_collection_group" {
@@ -145,7 +145,6 @@ module "avd_optional_rule_collection_group" {
   firewall_policy_rule_collection_group_firewall_policy_id = module.firewall_policy.resource.id
   firewall_policy_rule_collection_group_name               = "AVDOptionalRuleCollectionGroup"
   firewall_policy_rule_collection_group_priority           = 1050
-  location                                                 = var.location
   enable_telemetry                                         = var.enable_telemetry
   firewall_policy_rule_collection_group_application_rule_collection = [{
     action   = "Allow"
@@ -239,6 +238,7 @@ module "avd_optional_rule_collection_group" {
     ]
     }
   ]
+  location = var.location
 }
 
 module "m365rulecollectiongroup" {
@@ -248,7 +248,6 @@ module "m365rulecollectiongroup" {
   firewall_policy_rule_collection_group_firewall_policy_id = module.firewall_policy.resource.id
   firewall_policy_rule_collection_group_name               = "M365RuleCollectionGroup"
   firewall_policy_rule_collection_group_priority           = 2000
-  location                                                 = var.location
   enable_telemetry                                         = var.enable_telemetry
   firewall_policy_rule_collection_group_network_rule_collection = [{
     action   = "Allow"
@@ -265,6 +264,7 @@ module "m365rulecollectiongroup" {
     ]
     }
   ]
+  location = var.location
 }
 
 module "internetrulecollectiongroup" {
@@ -274,7 +274,6 @@ module "internetrulecollectiongroup" {
   firewall_policy_rule_collection_group_firewall_policy_id = module.firewall_policy.resource.id
   firewall_policy_rule_collection_group_name               = "InternetRuleCollectionGroup"
   firewall_policy_rule_collection_group_priority           = 3000
-  location                                                 = var.location
   enable_telemetry                                         = var.enable_telemetry
   firewall_policy_rule_collection_group_network_rule_collection = [{
     action   = "Allow"
@@ -291,4 +290,5 @@ module "internetrulecollectiongroup" {
     ]
     }
   ]
+  location = var.location
 }
