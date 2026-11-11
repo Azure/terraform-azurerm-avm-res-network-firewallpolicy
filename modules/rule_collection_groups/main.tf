@@ -46,6 +46,11 @@ resource "azapi_resource" "this" {
   # `*ProtocolS` members and `httpHeadersToInsert` would be PUT as literal
   # nulls on rules that do not use them.
   ignore_null_property = true
+  # Azure fails concurrent writes to rule collection groups in the same policy
+  # (`FirewallPolicyRuleCollectionGroupUpdateNotAllowedWhenUpdatingOrDeleting`).
+  # AzureRM serialized them with a provider lock on the policy name; this does
+  # the same on the policy ID.
+  locks = [var.firewall_policy_rule_collection_group_firewall_policy_id]
   # ✅ TFFR4: declared even though it is empty. `outputs.tf` never reads
   # `.output`, so nothing needs an export.
   #

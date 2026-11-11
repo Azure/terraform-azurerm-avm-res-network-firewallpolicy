@@ -59,6 +59,10 @@ What you need to know:
     }
   }
   ```
+- **Make a firewall that uses the policy depend on its rule collection groups.** Azure fails a rule
+  collection group write that overlaps a write to that firewall. AzureRM prevented this with a
+  provider lock; the submodule's AzAPI `locks` only serialize the groups themselves. If your
+  configuration manages the firewall, add the rule collection group modules to its `depends_on`.
 - **The `resource` output changes shape.** It is now an object built from the `azapi_resource`:
   `id`, `name`, `location`, `tags`, `identity`, `parent_id`, `type`, `body`, `firewalls`,
   `child_policies` and `rule_collection_groups`. Other AzureRM attributes are read from
