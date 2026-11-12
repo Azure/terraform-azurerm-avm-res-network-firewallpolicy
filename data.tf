@@ -78,3 +78,17 @@ data "azapi_resource" "this" {
     rule_collection_groups = "properties.ruleCollectionGroups[].id"
   }
 }
+
+# Role names are looked up here rather than by the interfaces module, whose lookup is case-sensitive.
+# AzureRM matched names case-insensitively, so an upgraded assignment configured as `reader` would
+# otherwise be replaced with an invalid role definition ID. The lookup runs at the policy's resource
+# group, so resource-group custom roles and inherited roles both resolve.
+data "azapi_resource_list" "role_definitions" {
+  count = length(var.role_assignments) > 0 ? 1 : 0
+
+  parent_id = local.firewall_policy_parent_id
+  type      = "Microsoft.Authorization/roleDefinitions@2022-04-01"
+  response_export_values = {
+    results = "value[].{id: id, role_name: properties.roleName}"
+  }
+}

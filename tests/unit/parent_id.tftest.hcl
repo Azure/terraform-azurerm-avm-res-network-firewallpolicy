@@ -137,6 +137,76 @@ run "resolves_custom_role_name_from_parent_lookup" {
   }
 }
 
+run "resolves_role_name_case_insensitively" {
+  command   = apply
+  state_key = "role_name_case_insensitive"
+
+  variables {
+    parent_id = "/subscriptions/00000000-0000-0000-0000-000000000003/resourceGroups/example"
+    role_assignments = {
+      lowercase = {
+        role_definition_id_or_name = "custom firewall operator"
+        principal_id               = "00000000-0000-0000-0000-000000000004"
+      }
+    }
+  }
+
+  assert {
+    condition     = azapi_resource.role_assignments["lowercase"].body.properties.roleDefinitionId == "/subscriptions/00000000-0000-0000-0000-000000000003/providers/microsoft.authorization/roledefinitions/00000000-0000-0000-0000-000000000007"
+    error_message = "A role name should resolve whatever its casing, as it did with AzureRM."
+  }
+  providers = {
+    azapi  = azapi
+    random = random
+  }
+}
+
+run "qualifies_tenant_level_role_definition_id" {
+  command   = apply
+  state_key = "tenant_level_role_definition_id"
+
+  variables {
+    parent_id = "/subscriptions/00000000-0000-0000-0000-000000000003/resourceGroups/example"
+    role_assignments = {
+      tenant_level = {
+        role_definition_id_or_name = "/providers/Microsoft.Authorization/roleDefinitions/00000000-0000-0000-0000-000000000006"
+        principal_id               = "00000000-0000-0000-0000-000000000004"
+      }
+    }
+  }
+
+  assert {
+    condition     = azapi_resource.role_assignments["tenant_level"].body.properties.roleDefinitionId == "/subscriptions/00000000-0000-0000-0000-000000000003/providers/microsoft.authorization/roledefinitions/00000000-0000-0000-0000-000000000006"
+    error_message = "A tenant-level role-definition ID should gain the policy's subscription, the form Azure returns."
+  }
+  providers = {
+    azapi  = azapi
+    random = random
+  }
+}
+
+run "rejects_unresolved_role_name" {
+  command = plan
+
+  variables {
+    parent_id = "/subscriptions/00000000-0000-0000-0000-000000000003/resourceGroups/example"
+    role_assignments = {
+      unknown = {
+        role_definition_id_or_name = "Not A Role"
+        principal_id               = "00000000-0000-0000-0000-000000000004"
+      }
+    }
+  }
+
+  expect_failures = [
+    azapi_resource.role_assignments,
+  ]
+  providers = {
+    azapi  = azapi
+    random = random
+  }
+}
+
 run "creates_role_assignment_with_explicit_name" {
   command   = apply
   state_key = "role_assignment_name_lifecycle"

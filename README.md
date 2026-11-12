@@ -17,6 +17,8 @@ What you need to know:
 
 - **Existing inputs keep working.** `resource_group_name` is still accepted. The new `parent_id`
   input is the preferred alternative. Set exactly one of them.
+- **Pass `location` to the `rule_collection_groups` submodule.** It is now required, and sets the
+  region of the submodule's telemetry deployment. Use the policy's location.
 - **Upgrading with `resource_group_name`.** The module reads the subscription from its AzAPI
   provider once and keeps it, so a `depends_on` on the module block with pending changes does not
   force a replacement later. The plan that first creates this record has no stored value yet: run
@@ -102,6 +104,7 @@ The following resources are used by this module:
 - [azapi_client_config.current](https://registry.terraform.io/providers/Azure/azapi/latest/docs/data-sources/client_config) (data source)
 - [azapi_client_config.telemetry](https://registry.terraform.io/providers/Azure/azapi/latest/docs/data-sources/client_config) (data source)
 - [azapi_resource.this](https://registry.terraform.io/providers/Azure/azapi/latest/docs/data-sources/resource) (data source)
+- [azapi_resource_list.role_definitions](https://registry.terraform.io/providers/Azure/azapi/latest/docs/data-sources/resource_list) (data source)
 
 <!-- markdownlint-disable MD013 -->
 ## Required Inputs
@@ -516,7 +519,7 @@ Default: `{}`
 Description:   A map of role assignments to create on the <RESOURCE>. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
 
   - `name` - (Optional) The name (a lowercase GUID) of the role assignment. If not set, the module derives a GUID from the policy, principal, role and delegated identity. An adopted assignment keeps its existing GUID on update. A name that you set is used when the assignment is created or replaced, so set a new name if you replace an assignment with a changed principal and want to pick the name yourself.
-  - `role_definition_id_or_name` - The ID or name of the role definition to assign to the principal. Names are resolved at the policy's parent resource group, including resource-group custom roles and inherited roles. Changing the resolved role on an existing assignment replaces it with a new GUID.
+  - `role_definition_id_or_name` - The ID or name of the role definition to assign to the principal. Names are resolved case-insensitively at the policy's parent resource group, including resource-group custom roles and inherited roles. A tenant-level ID (`/providers/Microsoft.Authorization/roleDefinitions/<guid>`) is qualified with the policy's subscription. Changing the resolved role on an existing assignment replaces it with a new GUID.
   - `principal_id` - The ID of the principal to assign the role to. Changing it on an existing assignment replaces it with a new GUID.
   - `description` - (Optional) The description of the role assignment.
   - `skip_service_principal_aad_check` - (Optional) Preserves the AzureRM request behavior by setting `principalType` to `ServicePrincipal` when `principal_type` is unset. If `principal_type` is explicitly set, that value takes precedence. A `409 Conflict` or `PrincipalNotFound` from a not-yet-replicated principal is retried by `var.retry`.

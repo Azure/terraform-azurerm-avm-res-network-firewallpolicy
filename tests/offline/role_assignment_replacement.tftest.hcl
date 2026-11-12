@@ -60,7 +60,7 @@ override_data {
 }
 
 override_data {
-  target = module.interfaces.data.azapi_resource_list.role_definitions[0]
+  target = data.azapi_resource_list.role_definitions[0]
   values = {
     output = {
       results = [{

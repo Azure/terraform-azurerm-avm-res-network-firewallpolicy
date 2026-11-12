@@ -61,16 +61,9 @@
 # member -- that would change a published AVM interface variable, which an
 # in-place provider migration must not do.
 #
-# `role_assignment_definition_scope` is required whenever `role_assignments` is
-# non-empty: the interfaces module resolves a role definition NAME to its ID
-# with a `data "azapi_resource_list"` at that scope. The old module did the
-# same job with `strcontains(...)` against
-# `local.role_definition_resource_substring`, handing the name to AzureRM's
-# `role_definition_name` argument; that local is gone because the lookup now
-# lives in the interfaces module. Scope that lookup to the policy's parent
-# resource group, as AzureRM did at the assignment scope, so resource-group
-# custom roles and inherited roles both resolve. Fully qualified role
-# definition IDs pass through without needing a name lookup.
+# Role names are resolved before they reach the interfaces module, by
+# `data.azapi_resource_list.role_definitions` and `local.role_assignments`, so
+# its own case-sensitive lookup is turned off.
 # -----------------------------------------------------------------------------
 module "interfaces" {
   source  = "Azure/avm-utl-interfaces/azure"
@@ -84,8 +77,8 @@ module "interfaces" {
     name  = var.lock.name
     notes = var.lock.kind == "CanNotDelete" ? "Cannot delete the resource or its child resources." : "Cannot delete or modify the resource or its child resources."
   }
-  role_assignment_definition_scope = local.firewall_policy_parent_id
-  role_assignments                 = var.role_assignments
+  role_assignment_definition_lookup_enabled = false
+  role_assignments                          = local.role_assignments
 }
 
 # -----------------------------------------------------------------------------
@@ -388,6 +381,12 @@ resource "azapi_resource" "role_assignments" {
     ignore_changes = [
       name,
     ]
+
+    # Fail at plan, before an upgraded assignment is replaced with a role definition ID that ARM rejects.
+    precondition {
+      condition     = strcontains(lower(each.value.body.properties.roleDefinitionId), local.role_definition_resource_substring)
+      error_message = "The role definition `${var.role_assignments[each.key].role_definition_id_or_name}` was not found at the policy's resource group. Use the name of a role that can be assigned there, or its role definition ID."
+    }
   }
 }
 
