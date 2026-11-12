@@ -157,6 +157,11 @@ resource "azapi_resource" "firewall" {
     }
     zones = ["1", "2", "3"]
   }
+
+  # Azure fails a rule collection group write that overlaps a firewall write on
+  # the same policy. AzureRM serialized them with a provider lock; this ordering
+  # does the same with any provider, and deletes the firewall first on destroy.
+  depends_on = [module.rule_collection_group]
 }
 
 # This is the module call
