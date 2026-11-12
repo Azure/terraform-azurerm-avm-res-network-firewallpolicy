@@ -348,3 +348,23 @@ locals {
   firewall_policy_firewalls              = try(tolist(data.azapi_resource.this.output.firewalls), [])
   firewall_policy_rule_collection_groups = try(tolist(data.azapi_resource.this.output.rule_collection_groups), [])
 }
+
+locals {
+  # Role definitions resolve the way AzureRM stored them, so an upgraded assignment is not replaced:
+  # names match case-insensitively, and tenant-level IDs gain the policy's subscription, the form
+  # Azure returns. A name that doesn't resolve stays as it is and fails the precondition on
+  # `azapi_resource.role_assignments`.
+  role_assignments = {
+    for key, assignment in var.role_assignments : key => merge(assignment, {
+      role_definition_id_or_name = (
+        !strcontains(lower(assignment.role_definition_id_or_name), local.role_definition_resource_substring) ? try(local.role_definition_ids_by_name[lower(assignment.role_definition_id_or_name)][0], assignment.role_definition_id_or_name) :
+        startswith(lower(assignment.role_definition_id_or_name), local.role_definition_resource_substring) ? "/subscriptions/${provider::azapi::parse_resource_id("Microsoft.Resources/resourceGroups", local.firewall_policy_parent_id).subscription_id}${assignment.role_definition_id_or_name}" :
+        assignment.role_definition_id_or_name
+      )
+    })
+  }
+  role_definition_ids_by_name = length(data.azapi_resource_list.role_definitions) > 0 ? {
+    for definition in data.azapi_resource_list.role_definitions[0].output.results : lower(definition.role_name) => definition.id...
+  } : {}
+  role_definition_resource_substring = "/providers/microsoft.authorization/roledefinitions/"
+}

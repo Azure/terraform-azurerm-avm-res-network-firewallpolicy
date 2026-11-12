@@ -15,6 +15,8 @@ What you need to know:
 
 - **Existing inputs keep working.** `resource_group_name` is still accepted. The new `parent_id`
   input is the preferred alternative. Set exactly one of them.
+- **Pass `location` to the `rule_collection_groups` submodule.** It is now required, and sets the
+  region of the submodule's telemetry deployment. Use the policy's location.
 - **Upgrading with `resource_group_name`.** The module reads the subscription from its AzAPI
   provider once and keeps it, so a `depends_on` on the module block with pending changes does not
   force a replacement later. The plan that first creates this record has no stored value yet: run
