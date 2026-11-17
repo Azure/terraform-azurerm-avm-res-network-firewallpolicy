@@ -6,8 +6,6 @@ mock_provider "azapi" {
   }
 }
 
-mock_provider "azurerm" {}
-
 variables {
   firewall_policy_rule_collection_group_firewall_policy_id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/test/providers/Microsoft.Network/firewallPolicies/test"
   firewall_policy_rule_collection_group_name               = "test"
