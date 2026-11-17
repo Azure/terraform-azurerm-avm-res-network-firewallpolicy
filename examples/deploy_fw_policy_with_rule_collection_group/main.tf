@@ -1,7 +1,6 @@
 terraform {
-  # Raised from `>= 1.3.0` by the AzAPI migration to match the module under
-  # test, which needs `>= 1.9`.
-  required_version = ">= 1.9, < 2.0"
+  # Match the module's Terraform baseline for AzAPI write-only arguments.
+  required_version = ">= 1.11, < 2.0"
 
   required_providers {
     azapi = {
@@ -68,7 +67,6 @@ module "rule_collection_group" {
   firewall_policy_rule_collection_group_firewall_policy_id = module.firewall_policy.resource_id
   firewall_policy_rule_collection_group_name               = "NetworkRuleCollectionGroup"
   firewall_policy_rule_collection_group_priority           = 400
-  location                                                 = var.location
   enable_telemetry                                         = var.enable_telemetry
   firewall_policy_rule_collection_group_application_rule_collection = [
     {
@@ -108,4 +106,5 @@ module "rule_collection_group" {
       ]
     }
   ]
+  location = var.location
 }

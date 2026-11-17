@@ -116,6 +116,60 @@ run "real_provider_preserves_existing_guid" {
   }
 }
 
+run "shared_lookup_preserves_existing_guid_for_mixed_case_role" {
+  command = plan
+  providers = {
+    azapi  = azapi.offline
+    random = random
+  }
+  plan_options {
+    refresh = false
+  }
+  variables {
+    role_assignments = {
+      reader = {
+        principal_id               = "22222222-2222-4222-8222-222222222222"
+        role_definition_id_or_name = "rEaDeR"
+      }
+    }
+  }
+  assert {
+    condition     = module.interfaces.role_assignments_azapi["reader"].body.properties.roleDefinitionId == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Authorization/roleDefinitions/acdd72a7-3385-48ef-bd42-f606fba81ae7"
+    error_message = "The shared interfaces lookup must resolve mixed-case role names to the existing role-definition ID."
+  }
+  assert {
+    condition     = azapi_resource.role_assignments["reader"].name == "11111111-1111-4111-8111-111111111111" && azapi_resource.role_assignments["reader"].body.properties.roleDefinitionId == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/microsoft.authorization/roledefinitions/acdd72a7-3385-48ef-bd42-f606fba81ae7"
+    error_message = "Changing only the role-name casing must retain the adopted assignment GUID and role."
+  }
+}
+
+run "shared_lookup_preserves_existing_guid_for_tenant_role_id" {
+  command = plan
+  providers = {
+    azapi  = azapi.offline
+    random = random
+  }
+  plan_options {
+    refresh = false
+  }
+  variables {
+    role_assignments = {
+      reader = {
+        principal_id               = "22222222-2222-4222-8222-222222222222"
+        role_definition_id_or_name = "/providers/MICROSOFT.AUTHORIZATION/roleDefinitions/ACDD72A7-3385-48EF-BD42-F606FBA81AE7"
+      }
+    }
+  }
+  assert {
+    condition     = module.interfaces.role_assignments_azapi["reader"].body.properties.roleDefinitionId == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Authorization/roleDefinitions/acdd72a7-3385-48ef-bd42-f606fba81ae7"
+    error_message = "The shared interfaces module must qualify a tenant-level role ID using the policy's explicit subscription scope."
+  }
+  assert {
+    condition     = azapi_resource.role_assignments["reader"].name == "11111111-1111-4111-8111-111111111111" && azapi_resource.role_assignments["reader"].body.properties.roleDefinitionId == "/subscriptions/00000000-0000-0000-0000-000000000000/providers/microsoft.authorization/roledefinitions/acdd72a7-3385-48ef-bd42-f606fba81ae7"
+    error_message = "An equivalent tenant-level role ID must retain the adopted assignment GUID and role."
+  }
+}
+
 run "real_provider_replaces_principal_edit_with_fresh_guid" {
   command = plan
   providers = {

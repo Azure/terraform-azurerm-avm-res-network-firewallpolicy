@@ -74,11 +74,11 @@
 # -----------------------------------------------------------------------------
 module "interfaces" {
   source  = "Azure/avm-utl-interfaces/azure"
-  version = "0.9.0"
+  version = "0.10.1"
 
-  location            = var.location
   diagnostic_settings = var.diagnostic_settings
   enable_telemetry    = var.enable_telemetry
+  location            = var.location
   lock = var.lock == null ? null : {
     kind  = var.lock.kind
     name  = var.lock.name

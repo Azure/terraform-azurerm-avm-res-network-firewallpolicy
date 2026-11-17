@@ -341,10 +341,9 @@ locals {
   # `flattenNetworkSubResourceID` returned an empty list in the same situation,
   # so `[]` is also the parity answer.
   #
-  # `try(tolist(...), [])` covers both the null case and the case where the
-  # export key is absent entirely.
+  # Coalesce explicit nulls before conversion; try also covers absent export keys.
   # ---------------------------------------------------------------------------
-  firewall_policy_child_policies         = try(tolist(data.azapi_resource.this.output.child_policies), [])
-  firewall_policy_firewalls              = try(tolist(data.azapi_resource.this.output.firewalls), [])
-  firewall_policy_rule_collection_groups = try(tolist(data.azapi_resource.this.output.rule_collection_groups), [])
+  firewall_policy_child_policies         = try(tolist(coalesce(data.azapi_resource.this.output.child_policies, [])), [])
+  firewall_policy_firewalls              = try(tolist(coalesce(data.azapi_resource.this.output.firewalls, [])), [])
+  firewall_policy_rule_collection_groups = try(tolist(coalesce(data.azapi_resource.this.output.rule_collection_groups, [])), [])
 }

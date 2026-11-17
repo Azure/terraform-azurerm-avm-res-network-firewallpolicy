@@ -9,12 +9,24 @@ provider to `azapi`. The in-module `moved` blocks map existing AzureRM state for
 collection groups, lock, role assignments and diagnostic settings to their AzAPI resources. The
 first refreshed plan can include in-place updates as AzAPI adopts the existing resources. Review all
 planned actions and stop if any existing resource has an unexpected destroy or replacement. After
-applying the migration, run a fresh plan; it should show no changes.
+applying the migration, run a fresh plan; existing business resources should show no changes.
+When telemetry is enabled, its empty deployment intentionally updates on each normal plan.
 
 What you need to know:
 
 - **Existing inputs keep working.** `resource_group_name` is still accepted. The new `parent_id`
   input is the preferred alternative. Set exactly one of them.
+- **Child telemetry location is conditional.** Pass the policy's region as `location` when using
+  `rule_collection_groups` with telemetry enabled. With `enable_telemetry = false`, the child accepts
+  an omitted or explicitly null `location`.
+- **Legacy telemetry state is forgotten, not destroyed.** Keep the previous `Azure/modtm` and
+  `hashicorp/random` providers available for the first initialization of an existing state. The
+  declarative `removed` blocks forget only the old telemetry objects with `destroy = false`.
+  Fresh installations and subsequent plans no longer require ModTM.
+- **Telemetry uses an empty subscription deployment.** When telemetry is enabled, the deployment
+  identity needs `Microsoft.Resources/deployments/read`, `write`, and `delete` at the active AzAPI
+  provider's subscription scope. Set `enable_telemetry = false` to disable collection in the module
+  and pass it to separately instantiated rule collection group modules as well.
 - **Upgrading with `resource_group_name`.** The module reads the subscription from its AzAPI
   provider once and keeps it, so a `depends_on` on the module block with pending changes does not
   force a replacement later. The plan that first creates this record has no stored value yet: run
@@ -28,8 +40,9 @@ What you need to know:
   removed afterwards.
 - **Map the target AzAPI provider when it is an alias.** The module derives the deployment
   subscription from its AzAPI provider when `resource_group_name` is used, and scopes custom
-  role-name lookups to the subscription in `parent_id`. Role names are looked up at that
-  subscription; if a role name is not available there, pass its full role-definition ID. Map the
+  role-name lookups to the policy's parent resource group. The shared AVM interfaces module resolves
+  names case-insensitively and qualifies tenant-level role-definition IDs with that subscription.
+  If a role name is not available at that scope, pass its full role-definition ID. Map the
   caller's target alias to the module's default `azapi` provider. The retained `azurerm` provider is
   only for reading legacy state; do not pass it to the migrated module.
 
@@ -71,8 +84,8 @@ What you need to know:
 - **New outputs.** `name`, `location`, `firewalls`, `child_policies` and `rule_collection_groups`.
   `rule_collection_groups` comes from a live read, so a group created in the same apply appears on
   the next plan.
-- **Minimum Terraform is now 1.9.** The AVM interfaces module used for locks, role assignments and
-  diagnostic settings requires it.
+- **Minimum Terraform is now 1.11.** The AzAPI `ignore_body_changes` interface uses write-only
+  arguments, including in the rule collection group submodule.
 - **New optional inputs.** `resource_types`, `ignore_body_changes`, `retry` and `timeouts`. Their
   defaults preserve the previous behaviour.
 "Major version Zero (0.y.z) is for initial development. Anything MAY change at any time. The module SHOULD NOT be considered stable till at least it is major version one (1.0.0) or greater. Changes will always be via new versions being published and no changes will be made to existing published versions. For more details please go to <https://semver.org/>"

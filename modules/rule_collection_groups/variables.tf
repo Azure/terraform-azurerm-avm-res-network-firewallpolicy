@@ -25,12 +25,6 @@ variable "firewall_policy_rule_collection_group_priority" {
   nullable    = false
 }
 
-variable "location" {
-  type        = string
-  description = "The Azure region for this module's resources or telemetry deployment."
-  nullable    = false
-}
-
 variable "enable_telemetry" {
   type        = bool
   default     = true
@@ -240,6 +234,17 @@ DESCRIPTION
   validation {
     condition     = alltrue([for path in var.ignore_body_changes.network_firewall_policies_rule_collection_groups : length(trimspace(path)) > 0])
     error_message = "Every path in `ignore_body_changes.network_firewall_policies_rule_collection_groups` must be a non-empty string."
+  }
+}
+
+variable "location" {
+  type        = string
+  default     = null
+  description = "The Azure region for this module's telemetry deployment. Required when telemetry is enabled."
+
+  validation {
+    condition     = var.location != null || !var.enable_telemetry
+    error_message = "The location must not be null when telemetry is enabled."
   }
 }
 

@@ -13,19 +13,13 @@ This deploys an Azure Firewall Policy with IP Groups in the rules
 
 ```hcl
 terraform {
-  # Raised from `>= 1.3.0` by the AzAPI migration to match the module under
-  # test, which needs `>= 1.9`.
-  required_version = ">= 1.9, < 2.0"
+  # Match the module's Terraform baseline for AzAPI write-only arguments.
+  required_version = ">= 1.11, < 2.0"
 
   required_providers {
     azapi = {
       source  = "Azure/azapi"
       version = "~> 2.12"
-    }
-    # tflint-ignore: terraform_unused_required_providers
-    modtm = {
-      source  = "registry.terraform.io/azure/modtm"
-      version = "~> 0.3"
     }
     random = {
       source  = "hashicorp/random"
@@ -73,12 +67,10 @@ resource "azapi_resource" "rg" {
   }
 }
 
-# 0.22.2 is the first AzAPI-based release of the virtual network module. The
-# subnet is created through its `subnets` input rather than as a separate
-# resource, which is also how the module prefers subnets to be declared.
+# 0.23.0 removes the legacy telemetry provider from the virtual network and its children.
 module "vnet" {
   source  = "Azure/avm-res-network-virtualnetwork/azurerm"
-  version = "0.22.2"
+  version = "0.23.0"
 
   location         = azapi_resource.rg.location
   parent_id        = azapi_resource.rg.id
@@ -194,7 +186,6 @@ module "rule_collection_group" {
   firewall_policy_rule_collection_group_firewall_policy_id = module.firewall_policy.resource_id
   firewall_policy_rule_collection_group_name               = "IPGroupRCG"
   firewall_policy_rule_collection_group_priority           = 400
-  location                                                 = var.location
   enable_telemetry                                         = var.enable_telemetry
   firewall_policy_rule_collection_group_application_rule_collection = [
     {
@@ -232,6 +223,7 @@ module "rule_collection_group" {
       ]
     }
   ]
+  location = var.location
 }
 ```
 
@@ -240,11 +232,9 @@ module "rule_collection_group" {
 
 The following requirements are needed by this module:
 
-- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (>= 1.9, < 2.0)
+- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (>= 1.11, < 2.0)
 
 - <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) (~> 2.12)
-
-- <a name="requirement_modtm"></a> [modtm](#requirement\_modtm) (~> 0.3)
 
 - <a name="requirement_random"></a> [random](#requirement\_random) (>= 3.5.0, < 4.0.0)
 
@@ -317,7 +307,7 @@ Version:
 
 Source: Azure/avm-res-network-virtualnetwork/azurerm
 
-Version: 0.22.2
+Version: 0.23.0
 
 <!-- markdownlint-disable-next-line MD041 -->
 ## Data Collection

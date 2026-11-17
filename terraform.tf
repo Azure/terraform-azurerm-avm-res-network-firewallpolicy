@@ -1,10 +1,6 @@
 terraform {
-  # `Azure/avm-utl-interfaces/azure` -- the AVM standard-interfaces composer this module now
-  # uses for its lock, role-assignment and diagnostic-setting bodies -- declares
-  # `required_version = "~> 1.9"`. Terraform resolves the INTERSECTION of every constraint in the
-  # graph, so a root left at `~> 1.5` would simply fail to initialise against it. The floor moves
-  # to 1.9 for that reason and no other.
-  required_version = ">= 1.9, < 2.0"
+  # Terraform 1.11 supports AzAPI's write-only ignore_body_changes argument.
+  required_version = ">= 1.11, < 2.0"
 
   required_providers {
     # `avm-tf-migration` SKILL.md L92: the AzAPI target must pin `Azure/azapi ~> 2.12`. The

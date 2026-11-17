@@ -1,7 +1,6 @@
 terraform {
-  # Raised from `>= 1.3.0` by the AzAPI migration to match the module under
-  # test, which needs `>= 1.9`.
-  required_version = ">= 1.9, < 2.0"
+  # Match the module's Terraform baseline for AzAPI write-only arguments.
+  required_version = ">= 1.11, < 2.0"
 
   required_providers {
     azapi = {

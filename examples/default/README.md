@@ -6,9 +6,8 @@ This deploys the module in its simplest form.
 
 ```hcl
 terraform {
-  # Raised from `>= 1.3.0` by the AzAPI migration to match the module under
-  # test, which needs `>= 1.9`.
-  required_version = ">= 1.9, < 2.0"
+  # Match the module's Terraform baseline for AzAPI write-only arguments.
+  required_version = ">= 1.11, < 2.0"
 
   required_providers {
     azapi = {
@@ -75,7 +74,7 @@ module "firewall_policy" {
 
 The following requirements are needed by this module:
 
-- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (>= 1.9, < 2.0)
+- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (>= 1.11, < 2.0)
 
 - <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) (~> 2.12)
 

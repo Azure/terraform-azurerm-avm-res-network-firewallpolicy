@@ -1,8 +1,6 @@
 terraform {
-  # Raised from `~> 1.5` by the AzAPI migration, to match the root module.
-  # `>= 1.9` is what every migrated module in this ecosystem pins, and a child
-  # module cannot usefully require less than its parent.
-  required_version = ">= 1.9, < 2.0"
+  # Terraform 1.11 supports AzAPI's write-only ignore_body_changes argument.
+  required_version = ">= 1.11, < 2.0"
 
   required_providers {
     # ⚠️ `hashicorp/azurerm` IS GONE FROM THIS SUBMODULE. It is not merely

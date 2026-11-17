@@ -4,6 +4,9 @@
 
 This is the sub-module to create Rule Collection Groups in Azure Firewall Policy
 
+Telemetry is enabled by default and requires `location`. Set
+`enable_telemetry = false` to omit `location` or pass `null`.
+
 ## Features
 
 This module supports:
@@ -19,7 +22,7 @@ This module supports:
 
 The following requirements are needed by this module:
 
-- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (>= 1.9, < 2.0)
+- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (>= 1.11, < 2.0)
 
 - <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) (~> 2.12)
 
@@ -54,12 +57,6 @@ Type: `string`
 Description: (Required) The priority of the Firewall Policy Rule Collection Group. The range is 100-65000.
 
 Type: `number`
-
-### <a name="input_location"></a> [location](#input\_location)
-
-Description: The Azure region for this module's resources or telemetry deployment.
-
-Type: `string`
 
 ## Optional Inputs
 
@@ -259,6 +256,14 @@ object({
 ```
 
 Default: `{}`
+
+### <a name="input_location"></a> [location](#input\_location)
+
+Description: The Azure region for this module's telemetry deployment. Required when telemetry is enabled.
+
+Type: `string`
+
+Default: `null`
 
 ### <a name="input_resource_types"></a> [resource\_types](#input\_resource\_types)
 
