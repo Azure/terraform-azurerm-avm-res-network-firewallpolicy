@@ -246,6 +246,10 @@ variable "location" {
     condition     = var.location != null || !var.enable_telemetry
     error_message = "The location must not be null when telemetry is enabled."
   }
+  validation {
+    condition     = !var.enable_telemetry || var.location != null
+    error_message = "The location must not be null when telemetry is enabled."
+  }
 }
 
 variable "resource_types" {
